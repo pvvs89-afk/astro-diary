@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Your birth details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrap">
+    <p>
+      These details are used to prepare your kundli.
+      Please enter the exact birth time if you know it.
+    </p>
+
+    <ion-input
+      label="Full name"
+      labelPlacement="floating"
+      fill="outline"
+      autocapitalize="words"
+      [(ngModel)]="fullName"
+    ></ion-input>
+
+    <ion-select
+      label="Gender"
+      labelPlacement="floating"
+      fill="outline"
+      interface="popover"
+      [(ngModel)]="gender"
+    >
+      <ion-select-option value="male">Male</ion-select-option>
+      <ion-select-option value="female">Female</ion-select-option>
+      <ion-select-option value="other">Other</ion-select-option>
+    </ion-select>
+
+    <ion-input
+      label="Date of birth"
+      labelPlacement="stacked"
+      fill="outline"
+      type="date"
+      min="1900-01-01"
+      [max]="today"
+      [(ngModel)]="dob"
+    ></ion-input>
+
+    <ion-input
+      label="Exact birth time"
+      labelPlacement="stacked"
+      fill="outline"
+      type="time"
+      [(ngModel)]="time"
+    ></ion-input>
+
+    <ion-input
+      label="Birth place (town / city, district, state)"
+      labelPlacement="floating"
+      fill="outline"
+      autocapitalize="words"
+      [(ngModel)]="place"
+    ></ion-input>
+
+    <ion-button expand="block" shape="round" [disabled]="busy()" (click)="save()">
+      @if (busy()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Save details
+      }
+    </ion-button>
+  </div>
+</ion-content>

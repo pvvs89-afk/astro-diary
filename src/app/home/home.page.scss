@@ -1,0 +1,18 @@
+.wrap {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.error {
+  color: var(--ion-color-danger);
+}
+
+ion-list {
+  margin-inline: 0;
+}

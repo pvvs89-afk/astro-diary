@@ -1,0 +1,58 @@
+<ion-content class="ion-padding">
+  <div class="wrap">
+    <ion-icon name="sparkles" color="primary" class="logo"></ion-icon>
+    <h1>Astro Diary</h1>
+    <p class="sub">{{ isRegister ? 'Create your account' : 'Welcome back' }}</p>
+
+    @if (isRegister) {
+      <ion-input
+        label="Full name"
+        labelPlacement="floating"
+        fill="outline"
+        autocapitalize="words"
+        [(ngModel)]="name"
+      ></ion-input>
+
+      <ion-input
+        label="Mobile number"
+        labelPlacement="floating"
+        fill="outline"
+        type="tel"
+        inputmode="numeric"
+        [maxlength]="10"
+        [(ngModel)]="phone"
+      >
+        <div slot="start">+91</div>
+      </ion-input>
+    }
+
+    <ion-input
+      label="Email"
+      labelPlacement="floating"
+      fill="outline"
+      type="email"
+      autocomplete="email"
+      [(ngModel)]="email"
+    ></ion-input>
+
+    <ion-input
+      label="Password"
+      labelPlacement="floating"
+      fill="outline"
+      type="password"
+      [(ngModel)]="password"
+    ></ion-input>
+
+    <ion-button expand="block" shape="round" [disabled]="busy()" (click)="submit()">
+      @if (busy()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        {{ isRegister ? 'Register' : 'Login' }}
+      }
+    </ion-button>
+
+    <ion-button fill="clear" expand="block" [disabled]="busy()" (click)="toggleMode()">
+      {{ isRegister ? 'Already have an account? Login' : 'New user? Register' }}
+    </ion-button>
+  </div>
+</ion-content>
