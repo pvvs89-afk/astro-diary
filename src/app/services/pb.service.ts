@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import tzlookup from '@photostructure/tz-lookup';
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 
 // Server address - change depending on where you test:
@@ -6,6 +7,35 @@ import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 //   Android emulator:        http://10.0.2.2:8090
 //   Real phone (same Wi-Fi): http://<laptop IPv4 from ipconfig>:8090
 export const SERVER_URL = 'http://127.0.0.1:8090';
+
+export type PlaceKind = 'city' | 'town' | 'village' | 'locality' | 'other';
+
+export interface Place {
+  /** Full address, saved as the birth place. */
+  name: string;
+  lat: number;
+  lon: number;
+  /** Short place name, e.g. "Rajahmundry". */
+  title?: string;
+  /** District, state and country, e.g. "East Godavari, Andhra Pradesh, India". */
+  area?: string;
+  kind?: PlaceKind;
+}
+
+/** A plan with the price for this customer's country (worked out on the server). */
+export interface PlanOffer {
+  id: string;
+  name: string;
+  description: string;
+  duration_months: number;
+  price: number;
+  currency: string;
+}
+
+export interface KundliState {
+  birth: RecordModel | null;
+  kundli: RecordModel | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PbService {
@@ -24,10 +54,23 @@ export class PbService {
     return this.pb.authStore.record;
   }
 
-  async register(name: string, phone: string, email: string, password: string): Promise<void> {
+  /**
+   * `phone` is saved as typed for India (10 digits) and as "+<code><number>"
+   * for other countries. `country` can't be changed by the customer later.
+   */
+  async register(
+    name: string,
+    phone: string,
+    email: string,
+    password: string,
+    country: string,
+    state: string,
+  ): Promise<void> {
     await this.pb.collection('users').create({
       name,
       phone,
+      country,
+      state,
       email,
       password,
       passwordConfirm: password,
@@ -54,24 +97,87 @@ export class PbService {
     gender: string;
     dob: string; // YYYY-MM-DD
     time: string; // HH:mm
-    place: string;
+    place: Place;
   }): Promise<void> {
+    const timezone = tzlookup(d.place.lat, d.place.lon);
     await this.pb.collection('birth_details').create({
       user: this.user?.id,
       full_name: d.fullName,
       gender: d.gender,
       dob: `${d.dob} 00:00:00.000Z`,
       birth_time: d.time,
-      birth_place: d.place,
+      birth_place: d.place.name,
+      latitude: d.place.lat,
+      longitude: d.place.lon,
+      timezone,
+      utc_offset: utcOffset(timezone, d.dob, d.time),
     });
   }
 
-  activePlans(): Promise<RecordModel[]> {
-    return this.pb.collection('plans').getFullList({
-      filter: 'active = true',
-      sort: 'price_inr',
+  /** Birth place suggestions (searched on our server via OpenStreetMap). */
+  async searchPlaces(q: string, state = ''): Promise<Place[]> {
+    const query: Record<string, string> = { q };
+    if (state) query['state'] = state;
+    const res = await this.pb.send<{ items: Place[] }>('/api/astro/places', {
+      query,
+      requestKey: null, // let the page drop old answers itself instead of auto-cancelling
     });
+    return res.items ?? [];
   }
+
+  /** Latest birth details and kundli (if already generated). */
+  kundliState(): Promise<KundliState> {
+    return this.pb.send<KundliState>('/api/astro/kundli', { method: 'GET' });
+  }
+
+  /**
+   * Generates the kundli once on the server (Prokerala) and returns it.
+   * For hi / ta / te / ml the server also stores Prokerala's report in that
+   * language (once per language), so switching back costs nothing.
+   */
+  generateKundli(la: string = 'en'): Promise<RecordModel> {
+    return this.pb.send<RecordModel>('/api/astro/kundli', { method: 'POST', body: { la } });
+  }
+
+  /** Active plans with prices in the customer's own currency. */
+  async activePlans(): Promise<PlanOffer[]> {
+    const res = await this.pb.send<{ items: PlanOffer[] }>('/api/astro/plans', { method: 'GET' });
+    return res.items ?? [];
+  }
+}
+
+/** Minutes ahead of UTC that a time zone was at one moment (uses the device's time zone history). */
+function zoneMinutes(timeZone: string, utcMs: number): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(new Date(utcMs));
+  const n = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  const asUtc = Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'));
+  return Math.round((asUtc - utcMs) / 60_000);
+}
+
+/**
+ * UTC offset ("+05:30", "-04:00") of a time zone at a local date and time,
+ * including daylight saving and historical changes (e.g. India's 1942–45 war time).
+ */
+export function utcOffset(timeZone: string, date: string, time: string): string {
+  const [y, mo, d] = date.split('-').map(Number);
+  const [h, mi] = time.split(':').map(Number);
+  const local = Date.UTC(y, mo - 1, d, h, mi);
+  let mins = zoneMinutes(timeZone, local);
+  const second = zoneMinutes(timeZone, local - mins * 60_000);
+  if (second !== mins) mins = second; // birth time close to a clock change
+  const sign = mins < 0 ? '-' : '+';
+  const abs = Math.abs(mins);
+  const pad = (v: number) => String(v).padStart(2, '0');
+  return `${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
 }
 
 /** Turns a server error into a short message for the user. */

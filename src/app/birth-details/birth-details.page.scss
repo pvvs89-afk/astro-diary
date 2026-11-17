@@ -6,6 +6,103 @@
   gap: 14px;
 }
 
-ion-button {
+.place-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.place-status {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  color: var(--ion-color-medium);
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.hint {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+
+.places {
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 10px;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+
+  ion-item {
+    font-size: 14px;
+  }
+
+  // Top suggestion = what Enter picks.
+  ion-item.top {
+    --background: var(--ion-color-light);
+  }
+}
+
+ion-button[shape='round'] {
   margin-top: 8px;
+}
+
+// Date / time dropdowns, styled like the outlined Ionic fields around them.
+.dd-group {
+  margin: 0;
+  padding: 2px 12px 12px;
+  border: 1px solid var(--ion-color-step-300, #b3b3b3);
+  border-radius: 4px;
+  min-width: 0;
+
+  legend {
+    padding: 0 4px;
+    font-size: 12px;
+    color: var(--ion-color-step-600, #666);
+  }
+}
+
+.dd-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dd {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 44px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--ion-color-step-250, #c8c8c8);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 16px; // 16px stops phones from zooming in
+  color: var(--ion-text-color, #000);
+  background-color: var(--ion-background-color, #fff);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23666' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 1px var(--ion-color-primary);
+  }
+
+  // Placeholder ("Year", "Hour" …) shown in grey until something is picked.
+  &:has(option[value='']:checked) {
+    color: var(--ion-color-step-500, #888);
+  }
+}
+
+// Year needs a little more room than the others.
+.dd-row .dd[aria-label='Year'] {
+  flex-grow: 1.25;
 }

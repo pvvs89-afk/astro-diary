@@ -1,33 +1,73 @@
 <ion-content class="ion-padding">
+  <div class="lang-row">
+    <app-lang-button fill="outline" shape="round"></app-lang-button>
+  </div>
+
   <div class="wrap">
-    <ion-icon name="sparkles" color="primary" class="logo"></ion-icon>
-    <h1>Astro Diary</h1>
-    <p class="sub">{{ isRegister ? 'Create your account' : 'Welcome back' }}</p>
+    <img class="logo" src="assets/logo/astro-diary-logo-white-tight.svg" alt="Astro Diary" />
+    <p class="sub">{{ isRegister ? t('create_account') : t('welcome_back') }}</p>
 
     @if (isRegister) {
       <ion-input
-        label="Full name"
+        [label]="t('full_name')"
         labelPlacement="floating"
         fill="outline"
         autocapitalize="words"
         [(ngModel)]="name"
       ></ion-input>
 
+      <ion-select
+        [label]="t('country')"
+        labelPlacement="floating"
+        fill="outline"
+        interface="popover"
+        [ngModel]="country()"
+        (ngModelChange)="country.set($event); state = ''"
+      >
+        @for (c of countries(); track c.code) {
+          <ion-select-option [value]="c.code">{{ c.name }} (+{{ c.dial }})</ion-select-option>
+        }
+        <ion-select-option [value]="OTHER">{{ t('other_country') }}</ion-select-option>
+      </ion-select>
+
+      @if (country() === 'IN') {
+        <ion-select
+          [label]="t('state')"
+          labelPlacement="floating"
+          fill="outline"
+          interface="popover"
+          [(ngModel)]="state"
+        >
+          @for (s of indianStates; track s) {
+            <ion-select-option [value]="s">{{ s }}</ion-select-option>
+          }
+        </ion-select>
+      } @else {
+        <ion-input
+          [label]="t('state_region')"
+          labelPlacement="floating"
+          fill="outline"
+          autocapitalize="words"
+          [maxlength]="60"
+          [(ngModel)]="state"
+        ></ion-input>
+      }
+
       <ion-input
-        label="Mobile number"
+        [label]="t('mobile')"
         labelPlacement="floating"
         fill="outline"
         type="tel"
         inputmode="numeric"
-        [maxlength]="10"
+        [maxlength]="country() === 'IN' ? 10 : 15"
         [(ngModel)]="phone"
       >
-        <div slot="start">+91</div>
+        <div slot="start">{{ dial() }}</div>
       </ion-input>
     }
 
     <ion-input
-      label="Email"
+      [label]="t('email')"
       labelPlacement="floating"
       fill="outline"
       type="email"
@@ -36,7 +76,7 @@
     ></ion-input>
 
     <ion-input
-      label="Password"
+      [label]="t('password')"
       labelPlacement="floating"
       fill="outline"
       type="password"
@@ -47,12 +87,12 @@
       @if (busy()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {
-        {{ isRegister ? 'Register' : 'Login' }}
+        {{ isRegister ? t('register') : t('login') }}
       }
     </ion-button>
 
-    <ion-button fill="clear" expand="block" [disabled]="busy()" (click)="toggleMode()">
-      {{ isRegister ? 'Already have an account? Login' : 'New user? Register' }}
+    <ion-button fill="clear" expand="block" class="ion-text-wrap" [disabled]="busy()" (click)="toggleMode()">
+      {{ isRegister ? t('have_account') : t('new_user') }}
     </ion-button>
   </div>
 </ion-content>

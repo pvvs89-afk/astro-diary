@@ -35,6 +35,11 @@ export const routes: Routes = [
       import('./birth-details/birth-details.page').then((m) => m.BirthDetailsPage),
   },
   {
+    path: 'kundli',
+    canActivate: [authGuard],
+    loadComponent: () => import('./kundli/kundli.page').then((m) => m.KundliPage),
+  },
+  {
     path: 'home',
     canActivate: [authGuard],
     loadComponent: () => import('./home/home.page').then((m) => m.HomePage),

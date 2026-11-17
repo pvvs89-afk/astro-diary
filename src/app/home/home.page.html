@@ -1,8 +1,9 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Astro Diary</ion-title>
+    <ion-title><span class="ad-icon ad-emblem title-icon" aria-hidden="true"></span> Astro Diary</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="logout()" aria-label="Logout">
+      <app-lang-button></app-lang-button>
+      <ion-button (click)="logout()" [attr.aria-label]="t('logout')">
         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -11,16 +12,20 @@
 
 <ion-content class="ion-padding">
   <div class="wrap">
-    <h2>Namaste{{ name ? ', ' + name : '' }}!</h2>
+    <h2>{{ name ? t('namaste_name', { name: name }) : t('namaste') }}</h2>
 
     <ion-card>
       <ion-card-header>
-        <ion-card-title>Your birth details are saved</ion-card-title>
-        <ion-card-subtitle>Your kundli will appear here soon.</ion-card-subtitle>
+        <ion-card-title>{{ t('my_kundli') }}</ion-card-title>
+        <ion-card-subtitle>{{ t('kundli_sub') }}</ion-card-subtitle>
       </ion-card-header>
+      <ion-card-content>
+        <ion-button expand="block" (click)="openKundli()">{{ t('view_kundli') }}</ion-button>
+        <ion-button expand="block" fill="clear" (click)="editBirthDetails()">{{ t('change_birth') }}</ion-button>
+      </ion-card-content>
     </ion-card>
 
-    <h3>Subscription plans</h3>
+    <h3>{{ t('plans') }}</h3>
 
     @if (loading()) {
       <div class="center"><ion-spinner name="crescent"></ion-spinner></div>
@@ -30,16 +35,16 @@
       <ion-list inset="true">
         @for (p of plans(); track p.id) {
           <ion-item>
-            <ion-label>
-              <h2>{{ p['name'] }}</h2>
-              <p>{{ p['description'] || p['duration_months'] + ' month(s)' }}</p>
+            <ion-label class="ion-text-wrap">
+              <h2>{{ p.name }}</h2>
+              <p>{{ p.description || t('months_count', { n: p.duration_months }) }}</p>
             </ion-label>
             <ion-button slot="end" shape="round" (click)="subscribe()">
-              ₹{{ p['price_inr'] }}
+              {{ money(p.price, p.currency) }}
             </ion-button>
           </ion-item>
         } @empty {
-          <p>No plans available yet.</p>
+          <p>{{ t('no_plans') }}</p>
         }
       </ion-list>
     }

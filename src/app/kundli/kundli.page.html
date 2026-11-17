@@ -1,0 +1,219 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ t('my_kundli') }}</ion-title>
+    <ion-buttons slot="end">
+      <app-lang-button></app-lang-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrap">
+    @if (loading()) {
+      <div class="center"><ion-spinner name="crescent"></ion-spinner></div>
+    } @else {
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+      @if (translating()) {
+        <p class="muted small translating"><ion-spinner name="dots"></ion-spinner> {{ t('translating') }}</p>
+      }
+
+      @if (!birth()) {
+        <!-- No birth details yet -->
+        <div class="card">
+          <p>{{ t('enter_birth_prompt') }}</p>
+          <ion-button expand="block" (click)="editBirthDetails()">{{ t('enter_birth') }}</ion-button>
+        </div>
+      } @else if (!kundli()) {
+        <!-- Birth details saved, kundli not generated yet -->
+        <div class="card">
+          <h3>{{ birth()?.['full_name'] }}</h3>
+          <p class="muted">{{ birth()?.['birth_place'] }}</p>
+
+          @if (!hasPlace()) {
+            <p>{{ t('place_needed') }}</p>
+            <ion-button expand="block" (click)="editBirthDetails()">{{ t('update_birth') }}</ion-button>
+          } @else {
+            <p>{{ t('kundli_ready') }}</p>
+            <ion-button expand="block" [disabled]="generating()" (click)="generate()">
+              @if (generating()) {
+                <ion-spinner name="crescent"></ion-spinner>&nbsp; {{ t('calculating') }}
+              } @else {
+                {{ t('generate') }}
+              }
+            </ion-button>
+            <ion-button expand="block" fill="clear" (click)="editBirthDetails()">{{ t('change_birth') }}</ion-button>
+          }
+        </div>
+      } @else if (view(); as v) {
+        <!-- Kundli -->
+        <div class="card head">
+          <h2>{{ v.name }}</h2>
+          <p class="muted">{{ birthText(v.datetime) }}</p>
+          <p class="muted small">{{ v.place }}</p>
+        </div>
+
+        <!-- Key facts -->
+        <div class="facts">
+          @if (v.lagna) {
+            <div class="fact"><span>{{ t('lagna') }}</span><b>{{ v.lagna }}</b></div>
+          }
+          @if (v.moonRasi) {
+            <div class="fact"><span>{{ t('moon_rasi') }}</span><b>{{ v.moonRasi }}</b></div>
+          }
+          @if (v.nakshatra) {
+            <div class="fact"><span>{{ t('nakshatra') }}</span><b>{{ v.nakshatra }}{{ v.pada ? ', ' + t('pada') + ' ' + v.pada : '' }}</b></div>
+          }
+          @if (v.nakshatraLord) {
+            <div class="fact"><span>{{ t('nakshatra_lord') }}</span><b>{{ v.nakshatraLord }}</b></div>
+          }
+          @if (v.sunRasi) {
+            <div class="fact"><span>{{ t('sun_sign') }}</span><b>{{ v.sunRasi }}</b></div>
+          }
+          @if (v.zodiac) {
+            <div class="fact"><span>{{ t('zodiac') }}</span><b>{{ v.zodiac }}</b></div>
+          }
+        </div>
+
+        <!-- South Indian chart -->
+        @if (v.planets.length) {
+          <h3>{{ t('rasi_chart') }}</h3>
+          <div class="chart">
+            @for (c of v.chart; track c.rasiId) {
+              <div class="cell" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
+                <span class="rasi">{{ c.rasi }}</span>
+                <span class="items">
+                  @for (it of c.items; track $index) {
+                    <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
+                  }
+                </span>
+              </div>
+            }
+            <div class="center-cell">
+              <b>{{ t('rasi') }}</b>
+              <span>{{ t('south_indian') }}</span>
+            </div>
+          </div>
+
+          <!-- Navamsa (D9) chart -->
+          <h3>{{ t('navamsa_chart') }}</h3>
+          @if (v.navamsa; as nav) {
+            <div class="chart">
+              @for (c of nav; track c.rasiId) {
+                <div class="cell" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
+                  <span class="rasi">{{ c.rasi }}</span>
+                  <span class="items">
+                    @for (it of c.items; track $index) {
+                      <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
+                    }
+                  </span>
+                </div>
+              }
+              <div class="center-cell">
+                <b>{{ t('navamsa') }}</b>
+                <span>D9</span>
+              </div>
+            </div>
+          } @else {
+            <div class="card">
+              <p>{{ t('navamsa_not_ready') }}</p>
+              <ion-button expand="block" [disabled]="generating()" (click)="generate()">
+                @if (generating()) {
+                  <ion-spinner name="crescent"></ion-spinner>&nbsp; {{ t('calculating') }}
+                } @else {
+                  {{ t('show_navamsa') }}
+                }
+              </ion-button>
+            </div>
+          }
+
+          <!-- Planets -->
+          <h3>{{ t('planet_positions') }}</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>{{ t('planet') }}</th><th>{{ t('rasi') }}</th><th>{{ t('degree') }}</th><th>{{ t('house') }}</th></tr>
+              </thead>
+              <tbody>
+                @for (p of v.planets; track p.name) {
+                  <tr>
+                    <td>{{ p.label }}@if (p.retro) { <span class="retro">{{ t('retro') }}</span> }</td>
+                    <td>{{ p.rasi }}</td>
+                    <td>{{ p.degree }}</td>
+                    <td>{{ p.house ?? '' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Mangal dosha -->
+        @if (v.mangal; as m) {
+          <h3>{{ t('mangal_dosha') }}</h3>
+          <div class="card" [class.warn]="m.hasDosha">
+            <b>{{ m.hasDosha ? t('mangal_yes') : t('mangal_no') }}</b>
+            @if (m.text) { <p>{{ m.text }}</p> }
+          </div>
+        }
+
+        <!-- Dasha -->
+        @if (v.dashas.length) {
+          <h3>{{ t('vimshottari') }}</h3>
+          @if (v.dashaBalance) {
+            <p class="muted">{{ t('dasha_balance', { v: v.dashaBalance }) }}</p>
+          }
+          <div class="dashas">
+            @for (d of v.dashas; track d.name + d.start) {
+              <div class="dasha" [class.current]="d.current">
+                <button class="dasha-head" (click)="toggleDasha(d.name + d.start)">
+                  <b>{{ d.name }}</b>
+                  <span>{{ d.start }} – {{ d.end }}</span>
+                  @if (d.current) { <span class="now">{{ t('running_now') }}</span> }
+                </button>
+                @if (openDasha() === d.name + d.start && d.antardasha.length) {
+                  <div class="antar">
+                    @for (a of d.antardasha; track a.name + a.start) {
+                      <div class="antar-row" [class.current]="a.current">
+                        <span>{{ d.name }} – {{ a.name }}</span>
+                        <span>{{ a.start }} – {{ a.end }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <p class="muted small">{{ t('tap_dasha') }}</p>
+        }
+
+        <!-- Yogas -->
+        @if (v.yogas.length) {
+          <h3>{{ t('yogas') }}</h3>
+          @for (y of v.yogas; track y.name) {
+            <div class="card">
+              <b>{{ y.name }}</b>
+              @if (y.text) { <p>{{ y.text }}</p> }
+            </div>
+          }
+        }
+
+        <!-- Nakshatra details -->
+        @if (v.extra.length) {
+          <h3>{{ t('nakshatra_details') }}</h3>
+          <div class="facts">
+            @for (x of v.extra; track x.label) {
+              <div class="fact"><span>{{ t(x.label) }}</span><b>{{ x.value }}</b></div>
+            }
+          </div>
+        }
+
+        <p class="muted small footer">{{ t('lahiri') }}</p>
+      }
+    }
+  </div>
+</ion-content>

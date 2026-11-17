@@ -9,8 +9,12 @@
 }
 
 .logo {
-  font-size: 56px;
+  display: block;
   align-self: center;
+  width: 220px;
+  max-width: 70%;
+  height: auto;
+  border-radius: 16px;
 }
 
 h1 {
@@ -26,4 +30,11 @@ h1 {
 
 ion-button[shape='round'] {
   margin-top: 12px;
+}
+
+.lang-row {
+  position: absolute;
+  top: calc(var(--ion-safe-area-top, 0px) + 8px);
+  right: 12px;
+  z-index: 2;
 }

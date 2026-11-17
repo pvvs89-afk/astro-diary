@@ -1,18 +1,18 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Your birth details</ion-title>
+    <ion-title>{{ t('birth_title') }}</ion-title>
+    <ion-buttons slot="end">
+      <app-lang-button></app-lang-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <div class="wrap">
-    <p>
-      These details are used to prepare your kundli.
-      Please enter the exact birth time if you know it.
-    </p>
+    <p>{{ t('birth_intro') }}</p>
 
     <ion-input
-      label="Full name"
+      [label]="t('full_name')"
       labelPlacement="floating"
       fill="outline"
       autocapitalize="words"
@@ -20,48 +20,117 @@
     ></ion-input>
 
     <ion-select
-      label="Gender"
+      [label]="t('gender')"
       labelPlacement="floating"
       fill="outline"
       interface="popover"
       [(ngModel)]="gender"
     >
-      <ion-select-option value="male">Male</ion-select-option>
-      <ion-select-option value="female">Female</ion-select-option>
-      <ion-select-option value="other">Other</ion-select-option>
+      <ion-select-option value="male">{{ t('male') }}</ion-select-option>
+      <ion-select-option value="female">{{ t('female') }}</ion-select-option>
+      <ion-select-option value="other">{{ t('other') }}</ion-select-option>
     </ion-select>
 
-    <ion-input
-      label="Date of birth"
-      labelPlacement="stacked"
-      fill="outline"
-      type="date"
-      min="1900-01-01"
-      [max]="today"
-      [(ngModel)]="dob"
-    ></ion-input>
+    <!-- Birth date: Year / Month / Day dropdowns (Prokerala style) -->
+    <fieldset class="dd-group">
+      <legend>{{ t('birth_date') }}</legend>
+      <div class="dd-row">
+        <select class="dd" [attr.aria-label]="t('year')" [(ngModel)]="year">
+          <option value="" disabled>{{ t('year') }}</option>
+          @for (y of years; track y) {
+            <option [value]="y">{{ y }}</option>
+          }
+        </select>
+        <select class="dd" [attr.aria-label]="t('month')" [(ngModel)]="month">
+          <option value="" disabled>{{ t('month') }}</option>
+          @for (m of months(); track m.value) {
+            <option [value]="m.value">{{ m.label }}</option>
+          }
+        </select>
+        <select class="dd" [attr.aria-label]="t('day')" [(ngModel)]="day">
+          <option value="" disabled>{{ t('day') }}</option>
+          @for (d of days; track d) {
+            <option [value]="d">{{ d }}</option>
+          }
+        </select>
+      </div>
+    </fieldset>
 
-    <ion-input
-      label="Exact birth time"
-      labelPlacement="stacked"
-      fill="outline"
-      type="time"
-      [(ngModel)]="time"
-    ></ion-input>
+    <!-- Birth time: Hour / Minute / AM-PM dropdowns (Prokerala style) -->
+    <fieldset class="dd-group">
+      <legend>{{ t('birth_time') }}</legend>
+      <div class="dd-row">
+        <select class="dd" [attr.aria-label]="t('hour')" [(ngModel)]="hour">
+          <option value="" disabled>{{ t('hour') }}</option>
+          @for (h of hours; track h) {
+            <option [value]="h">{{ h }}</option>
+          }
+        </select>
+        <select class="dd" [attr.aria-label]="t('minute')" [(ngModel)]="minute">
+          <option value="" disabled>{{ t('minute') }}</option>
+          @for (m of minutes; track m) {
+            <option [value]="m">{{ m }}</option>
+          }
+        </select>
+        <select class="dd" [attr.aria-label]="t('am_pm')" [(ngModel)]="ampm">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+    </fieldset>
 
-    <ion-input
-      label="Birth place (town / city, district, state)"
-      labelPlacement="floating"
-      fill="outline"
-      autocapitalize="words"
-      [(ngModel)]="place"
-    ></ion-input>
+    <!-- Birth place typeahead: suggestions appear while typing, any country -->
+    <div class="place-box">
+      <ion-input
+        [label]="t('birth_place')"
+        labelPlacement="floating"
+        fill="outline"
+        autocapitalize="words"
+        autocomplete="off"
+        [debounce]="350"
+        [value]="placeQuery"
+        (ionInput)="onPlaceInput($any($event).detail.value)"
+        (keyup.enter)="pickFirst()"
+      >
+        <span slot="end" class="place-status">
+          @if (searching()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else if (selectedPlace()) {
+            <ion-icon name="checkmark-circle" color="success"></ion-icon>
+          } @else {
+            <ion-icon name="search-outline"></ion-icon>
+          }
+        </span>
+      </ion-input>
+
+      @if (places(); as list) {
+        @if (list.length) {
+          <ion-list lines="full" class="places">
+            @for (p of list; track p.name; let i = $index) {
+              <ion-item button detail="false" (click)="choosePlace(p)" [class.top]="i === 0">
+                <ion-icon slot="start" name="location-outline"></ion-icon>
+                <ion-label class="ion-text-wrap">
+                  <b>{{ p.title || p.name }}</b>
+                  @if (p.area) {
+                    <p>{{ p.area }}</p>
+                  }
+                </ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        } @else if (!searching()) {
+          <p class="hint">{{ t('no_places') }}</p>
+        }
+      } @else if (!selectedPlace()) {
+        <p class="hint">{{ t('place_hint') }}</p>
+      }
+    </div>
 
     <ion-button expand="block" shape="round" [disabled]="busy()" (click)="save()">
       @if (busy()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {
-        Save details
+        {{ t('save_details') }}
       }
     </ion-button>
   </div>
