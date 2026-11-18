@@ -22,6 +22,16 @@ export interface Place {
   kind?: PlaceKind;
 }
 
+/** One person's birth details for match making. */
+export interface PersonBirth {
+  name: string;
+  dob: string; // YYYY-MM-DD
+  time: string; // HH:mm (24-hour)
+  place: Place;
+}
+
+export type MatchMethod = 'ashta_koota' | 'porutham';
+
 /** A plan with the price for this customer's country (worked out on the server). */
 export interface PlanOffer {
   id: string;
@@ -92,6 +102,15 @@ export class PbService {
     return res.items.length > 0;
   }
 
+  /** The customer's latest saved birth details, or null if none yet. */
+  async latestBirthDetails(): Promise<RecordModel | null> {
+    const res = await this.pb.collection('birth_details').getList(1, 1, {
+      filter: this.pb.filter('user = {:uid}', { uid: this.user?.id ?? '' }),
+      sort: '-created',
+    });
+    return res.items[0] ?? null;
+  }
+
   async saveBirthDetails(d: {
     fullName: string;
     gender: string;
@@ -137,6 +156,86 @@ export class PbService {
    */
   generateKundli(la: string = 'en'): Promise<RecordModel> {
     return this.pb.send<RecordModel>('/api/astro/kundli', { method: 'POST', body: { la } });
+  }
+
+  /**
+   * Live updates (PocketBase realtime): calls `onChange` when the admin changes
+   * plans or prices, or this customer's own account (e.g. their country).
+   * Returns a function that stops listening.
+   */
+  async watchPricing(onChange: () => void): Promise<() => Promise<void>> {
+    const stops: Array<() => Promise<void>> = [];
+    stops.push(
+      await this.pb.collection('app_signals').subscribe('*', (e) => {
+        if (e.record['name'] === 'pricing') onChange();
+      }),
+    );
+    const id = this.user?.id;
+    if (id) {
+      stops.push(
+        await this.pb.collection('users').subscribe(id, (e) => {
+          if (e.action === 'update') {
+            this.pb.authStore.save(this.pb.authStore.token, e.record); // keep name/country fresh
+            onChange();
+          }
+        }),
+      );
+    }
+    return async () => {
+      for (const stop of stops) await stop().catch(() => undefined);
+    };
+  }
+
+  // ---------- Match making ----------
+
+  /**
+   * Makes a match report on the server (Prokerala advanced report, saved once).
+   * `system` is only for Porutham: "tamil" or "kerala".
+   */
+  createMatch(
+    method: MatchMethod,
+    la: string,
+    boy: PersonBirth,
+    girl: PersonBirth,
+    system: 'tamil' | 'kerala' = 'tamil',
+  ): Promise<RecordModel> {
+    const person = (p: PersonBirth) => {
+      const tz = tzlookup(p.place.lat, p.place.lon);
+      return {
+        name: p.name,
+        dob: p.dob,
+        time: p.time,
+        place: p.place.name,
+        lat: p.place.lat,
+        lon: p.place.lon,
+        offset: utcOffset(tz, p.dob, p.time),
+      };
+    };
+    return this.pb.send<RecordModel>('/api/astro/match', {
+      method: 'POST',
+      body: { method, la, porutham_system: system, boy: person(boy), girl: person(girl) },
+    });
+  }
+
+  /** This customer's match reports, newest first (without the big report data). */
+  listMatches(): Promise<RecordModel[]> {
+    return this.pb.collection('matches').getFullList({
+      sort: '-created',
+      fields: 'id,method,language,boy_name,girl_name,score,max_score,created',
+    });
+  }
+
+  getMatch(id: string): Promise<RecordModel> {
+    return this.pb.collection('matches').getOne(id);
+  }
+
+  /** Adds missing Rasi / Navamsa charts to a saved match (once; 80 credits per person). */
+  ensureMatchCharts(id: string): Promise<RecordModel> {
+    return this.pb.send<RecordModel>(`/api/astro/match/${encodeURIComponent(id)}/charts`, { method: 'POST' });
+  }
+
+  deleteMatch(id: string): Promise<boolean> {
+    return this.pb.collection('matches').delete(id);
   }
 
   /** Active plans with prices in the customer's own currency. */

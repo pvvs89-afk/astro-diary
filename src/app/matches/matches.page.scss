@@ -1,0 +1,35 @@
+.wrap {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.error {
+  color: var(--ion-color-danger);
+}
+
+.muted {
+  color: var(--ion-color-medium);
+  padding: 8px 4px;
+}
+
+ion-list {
+  margin-inline: 0;
+}
+
+.score {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ion-color-primary);
+
+  small {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ion-color-medium);
+  }
+}

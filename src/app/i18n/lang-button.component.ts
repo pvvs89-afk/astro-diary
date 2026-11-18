@@ -11,7 +11,7 @@ import { I18nService, LANGUAGES } from './i18n.service';
   imports: [IonButton, IonIcon],
   template: `
     <ion-button [fill]="fill" [shape]="shape" size="small" (click)="open()" [attr.aria-label]="i18n.t('language')">
-      <ion-icon slot="start" name="language-outline"></ion-icon>
+      <ion-icon slot="start" name="language-outline" aria-hidden="true"></ion-icon>
       {{ i18n.label }}
     </ion-button>
   `,

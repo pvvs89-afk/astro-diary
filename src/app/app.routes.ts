@@ -9,17 +9,11 @@ const authGuard: CanActivateFn = () => {
   return pbs.isLoggedIn ? true : router.parseUrl('/login');
 };
 
-/** App start: login -> birth details (if not filled) -> home. */
-const startGuard: CanActivateFn = async () => {
+/** App start: login -> home, where the customer picks My Kundli or Match Making. */
+const startGuard: CanActivateFn = () => {
   const pbs = inject(PbService);
   const router = inject(Router);
-  if (!pbs.isLoggedIn) return router.parseUrl('/login');
-  try {
-    const has = await pbs.hasBirthDetails();
-    return router.parseUrl(has ? '/home' : '/birth-details');
-  } catch {
-    return router.parseUrl('/login');
-  }
+  return router.parseUrl(pbs.isLoggedIn ? '/home' : '/login');
 };
 
 export const routes: Routes = [
@@ -38,6 +32,26 @@ export const routes: Routes = [
     path: 'kundli',
     canActivate: [authGuard],
     loadComponent: () => import('./kundli/kundli.page').then((m) => m.KundliPage),
+  },
+  {
+    path: 'matches',
+    canActivate: [authGuard],
+    loadComponent: () => import('./matches/matches.page').then((m) => m.MatchesPage),
+  },
+  {
+    path: 'match-new',
+    canActivate: [authGuard],
+    loadComponent: () => import('./match-new/match-new.page').then((m) => m.MatchNewPage),
+  },
+  {
+    path: 'match/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./match/match.page').then((m) => m.MatchPage),
+  },
+  {
+    path: 'payment/:planId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./payment/payment.page').then((m) => m.PaymentPage),
   },
   {
     path: 'home',

@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [attr.aria-label]="t('back')" defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ t('match_making') }}</ion-title>
+    <ion-buttons slot="end">
+      <app-lang-button></app-lang-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrap">
+    <!-- Method -->
+    <fieldset class="methods">
+      <legend>{{ t('match_method') }}</legend>
+      <label class="method" [class.on]="method() === 'ashta_koota'">
+        <input type="radio" name="method" value="ashta_koota" [checked]="method() === 'ashta_koota'" (change)="method.set('ashta_koota')" />
+        <span><b>{{ t('ashta_koota') }}</b><small>{{ t('ashta_koota_hint') }}</small></span>
+      </label>
+      <label class="method" [class.on]="method() === 'porutham'">
+        <input type="radio" name="method" value="porutham" [checked]="method() === 'porutham'" (change)="method.set('porutham')" />
+        <span><b>{{ t('porutham') }}</b><small>{{ t('porutham_hint') }}</small></span>
+      </label>
+      @if (method() === 'porutham') {
+        <div class="system">
+          <span>{{ t('porutham_system') }}:</span>
+          <label><input type="radio" name="system" [checked]="system() === 'tamil'" (change)="system.set('tamil')" /> {{ t('tamil_style') }}</label>
+          <label><input type="radio" name="system" [checked]="system() === 'kerala'" (change)="system.set('kerala')" /> {{ t('kerala_style') }}</label>
+        </div>
+      }
+    </fieldset>
+
+    <!-- Boy -->
+    <section class="person">
+      <app-person-form #boyForm [title]="t('boy_details')"></app-person-form>
+      @if (mine()) {
+        <ion-button fill="clear" size="small" (click)="useMine(boyForm)">↺ {{ mineLabel() }}</ion-button>
+      }
+    </section>
+
+    <!-- Girl -->
+    <section class="person">
+      <app-person-form #girlForm [title]="t('girl_details')"></app-person-form>
+      @if (mine()) {
+        <ion-button fill="clear" size="small" (click)="useMine(girlForm)">↺ {{ mineLabel() }}</ion-button>
+      }
+    </section>
+
+    <div class="actions">
+      <ion-button fill="outline" shape="round" [disabled]="busy()" (click)="cancel()">{{ t('cancel') }}</ion-button>
+      <ion-button shape="round" [disabled]="busy()" (click)="submit(boyForm, girlForm)">
+        @if (busy()) {
+          <ion-spinner name="crescent"></ion-spinner>&nbsp; {{ t('matching') }}
+        } @else {
+          {{ t('match_now') }}
+        }
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

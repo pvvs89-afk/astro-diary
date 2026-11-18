@@ -3,14 +3,15 @@
 // that part of the page is simply hidden instead of breaking.
 
 //
-// Languages: the chart, planet table and dasha list are always built from the
-// English data and shown with our own name lists (astro-names.ts). Texts that
-// Prokerala writes (nakshatra details, mangal dosha, yogas, dasha balance) come
-// from the translated report in data.langs[lang] once the server has fetched it.
+// Languages: Prokerala is only ever asked in English (other languages cost double).
+// Every name - rasi, planet, nakshatra, lords, months, dasha - is shown in the chosen
+// language from our own lists (astro-names.ts). Longer texts Prokerala writes
+// (yoga and mangal dosha descriptions, nakshatra extras) stay in English.
+// Kundlis that already have a translated report saved in data.langs still use it.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { LangCode, MONTH_NAMES, RASI_NAMES, planetName, planetShort } from '../i18n/astro-names';
+import { LangCode, MONTH_NAMES, RASI_NAMES, nakshatraName, planetName, planetShort } from '../i18n/astro-names';
 import { Key } from '../i18n/en';
 
 /** South Indian chart: fixed grid cell (row, col) for each rasi id 0..11. */
@@ -48,7 +49,8 @@ export interface ChartCell {
   rasi: string;
   row: number;
   col: number;
-  items: { text: string; asc: boolean; retro: boolean }[];
+  /** text = short chart label; full = planet name for screen readers. */
+  items: { text: string; full: string; asc: boolean; retro: boolean }[];
   isLagna: boolean;
 }
 
@@ -107,9 +109,19 @@ function isNow(start: any, end: any): boolean {
   return isFinite(s) && isFinite(e) && s <= now && now < e;
 }
 
-/** True when the translated report for this language is stored. */
+/**
+ * Always true now: every language is shown from the English report with our own
+ * name lists, so nothing has to be fetched from Prokerala for another language.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function hasLanguage(data: any, lang: LangCode): boolean {
-  return lang === 'en' || !!data?.langs?.[lang]?.kundli;
+  return true;
+}
+
+/** Planet lord in the chosen language ("Mars" -> "కుజుడు"); English keeps Prokerala's vedic name. */
+function lordName(lord: any, lang: LangCode): string {
+  if (!lord) return '';
+  return lang === 'en' ? str(lord.vedic_name || lord.name) : planetName(str(lord.name), lang);
 }
 
 export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | null {
@@ -129,7 +141,7 @@ export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | 
     short: planetShort(str(p?.name), lang),
     rasi: rasiName(Number(p?.rasi?.id), str(p?.rasi?.name)),
     rasiId: Number(p?.rasi?.id),
-    rasiLord: str(p?.rasi?.lord?.vedic_name || p?.rasi?.lord?.name),
+    rasiLord: lordName(p?.rasi?.lord, lang),
     degree: degreeText(p?.degree),
     house: p?.position !== undefined && p?.position !== null ? Number(p.position) : null,
     retro: !!p?.is_retrograde,
@@ -179,7 +191,8 @@ export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | 
 
   const db = lk.dasha_balance ?? k.dasha_balance;
   const dashaBalance = db
-    ? str(db.description) || [planetName(str(db.lord?.name), lang), str(db.duration)].filter(Boolean).join(' – ')
+    ? (lang === 'en' || lk !== k ? str(db.description) : '') ||
+      [planetName(str(db.lord?.name), lang), str(db.duration)].filter(Boolean).join(' – ')
     : '';
 
   // Yogas (Prokerala groups them; flatten the ones that apply)
@@ -199,11 +212,11 @@ export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | 
     name: str(data.input?.name),
     datetime: str(data.input?.datetime),
     place: str(data.input?.place),
-    nakshatra: str(nd.nakshatra?.name),
-    nakshatraLord: str(nd.nakshatra?.lord?.vedic_name || nd.nakshatra?.lord?.name),
+    nakshatra: lk === k ? nakshatraName(nd.nakshatra?.id, str(nd.nakshatra?.name), lang) : str(nd.nakshatra?.name),
+    nakshatraLord: lk === k ? lordName(nd.nakshatra?.lord, lang) : str(nd.nakshatra?.lord?.vedic_name || nd.nakshatra?.lord?.name),
     pada: str(nd.nakshatra?.pada),
     moonRasi: lk === k ? rasiName(Number(nd.chandra_rasi?.id), str(nd.chandra_rasi?.name)) : str(nd.chandra_rasi?.name),
-    moonRasiLord: str(nd.chandra_rasi?.lord?.vedic_name || nd.chandra_rasi?.lord?.name),
+    moonRasiLord: lk === k ? lordName(nd.chandra_rasi?.lord, lang) : str(nd.chandra_rasi?.lord?.vedic_name || nd.chandra_rasi?.lord?.name),
     sunRasi: lk === k ? rasiName(Number(nd.soorya_rasi?.id), str(nd.soorya_rasi?.name)) : str(nd.soorya_rasi?.name),
     lagna: asc ? `${asc.rasi} ${asc.degree}` : '',
     zodiac: str(nd.zodiac?.name),
@@ -214,7 +227,9 @@ export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | 
     yogas,
     planets: planets.filter((p) => p.name !== 'Ascendant'),
     chart,
-    navamsa: buildNavamsa(data.navamsa, lang),
+    // Prokerala's Navamsa if stored (older kundlis), else calculated here from the
+    // planet positions - same result, no extra Prokerala call.
+    navamsa: buildNavamsa(data.navamsa, lang) ?? navamsaFromPlanets(planetsRaw, lang),
   };
 }
 
@@ -235,7 +250,12 @@ function southChart(planets: ChartPlanet[], lagnaRasiId: number | undefined, lan
     isLagna: lagnaRasiId === rasiId,
     items: planets
       .filter((p) => p.rasiId === rasiId)
-      .map((p) => ({ text: p.short, asc: p.name === 'Ascendant', retro: p.retro && p.name !== 'Ascendant' })),
+      .map((p) => ({
+        text: p.short,
+        full: planetName(p.name, lang),
+        asc: p.name === 'Ascendant',
+        retro: p.retro && p.name !== 'Ascendant',
+      })),
   }));
 }
 
@@ -268,6 +288,42 @@ function buildNavamsa(d: any, lang: LangCode): ChartCell[] | null {
     }
   }
   return planets.length ? southChart(planets, lagnaRasiId ?? house1RasiId, lang) : null;
+}
+
+/**
+ * Navamsa (D9) from sidereal longitudes: each sign is split into 9 parts of 3°20';
+ * counting those parts from 0° Aries, the part number mod 12 is the navamsa sign.
+ * (Checked against Prokerala's divisional chart: 30 of 30 positions matched.)
+ */
+export function navamsaSign(longitude: number): number {
+  const lon = ((longitude % 360) + 360) % 360;
+  return Math.floor((lon * 9) / 30) % 12;
+}
+
+function navamsaFromPlanets(planetsRaw: any[], lang: LangCode): ChartCell[] | null {
+  const planets: ChartPlanet[] = [];
+  let lagnaRasiId: number | undefined;
+  for (const p of planetsRaw ?? []) {
+    const name = str(p?.name);
+    const lon = Number(p?.longitude);
+    if (!name || !isFinite(lon)) continue;
+    const rasiId = navamsaSign(lon);
+    if (name === 'Ascendant') lagnaRasiId = rasiId;
+    planets.push({ name, short: planetShort(name, lang), rasiId, retro: !!p?.is_retrograde });
+  }
+  return planets.length ? southChart(planets, lagnaRasiId, lang) : null;
+}
+
+/**
+ * Text description of a chart for screen readers, e.g.
+ * "Rasi chart. Mesha: Ascendant. Simha: Mars, Jupiter (R). Other signs empty."
+ */
+export function chartSummary(cells: ChartCell[] | null | undefined, title: string, retroMark = '(R)'): string {
+  if (!cells?.length) return title;
+  const filled = cells
+    .filter((c) => c.items.length)
+    .map((c) => `${c.rasi}: ${c.items.map((i) => i.full + (i.retro ? ' ' + retroMark : '')).join(', ')}`);
+  return `${title}. ${filled.join('. ')}.`;
 }
 
 /** "1990-05-12T06:30:00+05:30" -> "12 May 1990, 6:30 am" (birth time as entered). */

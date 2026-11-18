@@ -4,7 +4,8 @@
     <ion-buttons slot="end">
       <app-lang-button></app-lang-button>
       <ion-button (click)="logout()" [attr.aria-label]="t('logout')">
-        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+        <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
+        <span class="logout-text">{{ t('logout') }}</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -14,23 +15,43 @@
   <div class="wrap">
     <h2>{{ name ? t('namaste_name', { name: name }) : t('namaste') }}</h2>
 
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{ t('my_kundli') }}</ion-card-title>
-        <ion-card-subtitle>{{ t('kundli_sub') }}</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-button expand="block" (click)="openKundli()">{{ t('view_kundli') }}</ion-button>
-        <ion-button expand="block" fill="clear" (click)="editBirthDetails()">{{ t('change_birth') }}</ion-button>
-      </ion-card-content>
-    </ion-card>
+    <h3>{{ t('services') }}</h3>
+    <div class="services">
+      <!-- 1. My Kundli -->
+      <ion-card class="service">
+        <ion-card-header>
+          <ion-card-title>🪐 {{ t('my_kundli') }}</ion-card-title>
+          <ion-card-subtitle>{{ t('kundli_sub') }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          @if (hasBirth()) {
+            <ion-button expand="block" (click)="openKundli()">{{ t('view_kundli') }}</ion-button>
+            <ion-button expand="block" fill="clear" (click)="editBirthDetails()">{{ t('change_birth') }}</ion-button>
+          } @else {
+            <ion-button expand="block" (click)="editBirthDetails()">{{ t('enter_birth') }}</ion-button>
+          }
+        </ion-card-content>
+      </ion-card>
+
+      <!-- 2. Match Making -->
+      <ion-card class="service">
+        <ion-card-header>
+          <ion-card-title>💞 {{ t('match_making') }}</ion-card-title>
+          <ion-card-subtitle>{{ t('match_sub') }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-button expand="block" (click)="newMatch()">{{ t('start_match') }}</ion-button>
+          <ion-button expand="block" fill="clear" (click)="myMatches()">{{ t('my_matches') }}</ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
 
     <h3>{{ t('plans') }}</h3>
 
     @if (loading()) {
-      <div class="center"><ion-spinner name="crescent"></ion-spinner></div>
+      <div class="center" role="status" aria-live="polite"><ion-spinner name="crescent" aria-hidden="true"></ion-spinner><span class="sr-only">{{ t('loading') }}</span></div>
     } @else if (error()) {
-      <p class="error">{{ error() }}</p>
+      <p class="error" role="alert">{{ error() }}</p>
     } @else {
       <ion-list inset="true">
         @for (p of plans(); track p.id) {
@@ -39,7 +60,7 @@
               <h2>{{ p.name }}</h2>
               <p>{{ p.description || t('months_count', { n: p.duration_months }) }}</p>
             </ion-label>
-            <ion-button slot="end" shape="round" (click)="subscribe()">
+            <ion-button slot="end" shape="round" (click)="subscribe(p)" [attr.aria-label]="t('pay_amount', { amount: money(p.price, p.currency) }) + ' – ' + p.name">
               {{ money(p.price, p.currency) }}
             </ion-button>
           </ion-item>
@@ -48,5 +69,10 @@
         }
       </ion-list>
     }
+
+    <ion-button expand="block" fill="clear" color="medium" class="bottom-logout" (click)="logout()">
+      <ion-icon slot="start" name="log-out-outline" aria-hidden="true"></ion-icon>
+      {{ t('logout') }}
+    </ion-button>
   </div>
 </ion-content>

@@ -270,3 +270,56 @@ th {
   align-items: center;
   gap: 6px;
 }
+
+// ---------- PDF export ----------
+.pdf-button {
+  margin-top: 16px;
+}
+
+// Brand line at the top of the PDF only
+.pdf-only {
+  display: none;
+}
+
+.pdf-brand {
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #13245e;
+
+  img {
+    height: 44px;
+    width: auto;
+  }
+
+  span {
+    font-size: 12px;
+    color: #555;
+  }
+}
+
+// While the PDF is being made: always light colours (even in dark mode)
+// and a fixed width so the layout is the same on every phone.
+.pdf-area.pdf-print {
+  --ion-text-color: #000;
+  --ion-color-light: #f4f5f8;
+  --ion-color-light-shade: #d7d8da;
+  --ion-color-medium: #555;
+  width: 720px;
+  padding: 16px;
+  background: #fff;
+  color: #000;
+
+  .pdf-only {
+    display: flex;
+  }
+
+  .no-pdf {
+    display: none;
+  }
+
+  .chart {
+    max-width: 420px;
+  }
+}

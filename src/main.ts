@@ -14,7 +14,9 @@ import { routes } from './app/app.routes';
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular(),
+    // Same Material look on Android, iPhone and desktop. (In iOS mode Ionic does not
+    // draw outlined input boxes, so fields looked empty on iPhones / iPhone preview.)
+    provideIonicAngular({ mode: 'md' }),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
   ],
 });

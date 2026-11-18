@@ -1,0 +1,199 @@
+:host {
+  display: block;
+  margin-top: 8px;
+  // Default: app theme colour
+  --pc: var(--ion-color-primary);
+  --pc-tint: var(--ion-color-primary-tint);
+  --pc-soft: rgba(var(--ion-color-primary-rgb), 0.08);
+  --pc-bg: transparent;
+}
+
+// Boy: blue
+:host(.boy) {
+  --pc: #1d5fd1;
+  --pc-tint: #8fb0ea;
+  --pc-soft: rgba(29, 95, 209, 0.16);
+  --pc-bg: #eef4ff; // pale blue
+}
+
+// Girl: green
+:host(.girl) {
+  --pc: #0f7a52;
+  --pc-tint: #8fcfb4;
+  --pc-soft: rgba(15, 122, 82, 0.15);
+  --pc-bg: #edf8f2; // pale green
+}
+
+.who {
+  margin: 0 0 4px;
+  color: var(--pc);
+  font-size: 15px;
+  font-weight: 400;
+
+  b {
+    color: var(--ion-text-color, #000);
+  }
+}
+
+h4 {
+  margin: 12px 0 8px;
+}
+
+.muted {
+  color: var(--ion-color-medium);
+  margin: 4px 0;
+}
+
+.small {
+  font-size: 13px;
+}
+
+// Rasi and Navamsa next to each other; with the boy's and girl's columns side by
+// side on the page, all 4 charts sit in one line.
+.charts {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+
+  > div {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+// Very narrow phones: Rasi above Navamsa.
+@media (max-width: 480px) {
+  .charts {
+    flex-direction: column;
+  }
+}
+
+// South Indian chart: 4x4 grid, middle 2x2 is the centre
+.chart {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 360px;
+  border: 2px solid var(--pc);
+  background: var(--pc-bg);
+  color: #1b1b1b;
+}
+
+.cell {
+  border: 1px solid var(--pc-tint);
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+
+  .rasi {
+    font-size: 10px;
+    color: var(--ion-color-medium);
+  }
+
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .asc {
+    color: var(--ion-color-danger);
+  }
+
+  &.lagna {
+    background: var(--pc-soft);
+  }
+}
+
+.center-cell {
+  grid-row: 2 / span 2;
+  grid-column: 2 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--pc);
+  text-align: center;
+  padding: 4px;
+
+  span {
+    font-size: 12px;
+    color: var(--ion-color-medium);
+    overflow-wrap: anywhere;
+  }
+}
+
+.dashas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dasha {
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: 10px;
+  overflow: hidden;
+
+  &.current {
+    border-color: var(--pc);
+  }
+}
+
+.dasha-head {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 9px 12px;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  span {
+    font-size: 13px;
+    color: var(--ion-color-medium);
+  }
+
+  .now {
+    margin-left: auto;
+    color: var(--pc);
+    font-weight: 600;
+  }
+}
+
+.antar {
+  border-top: 1px solid var(--ion-color-light-shade);
+  padding: 4px 12px 8px;
+}
+
+.antar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  padding: 3px 0;
+
+  &.current {
+    font-weight: 700;
+    color: var(--pc);
+  }
+}
+
+h4 {
+  color: var(--pc);
+}
+
+.dasha.current {
+  background: var(--pc-bg);
+}

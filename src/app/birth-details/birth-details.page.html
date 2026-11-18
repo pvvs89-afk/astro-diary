@@ -1,5 +1,10 @@
 <ion-header>
   <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" [attr.aria-label]="t('back')">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>{{ t('birth_title') }}</ion-title>
     <ion-buttons slot="end">
       <app-lang-button></app-lang-button>
@@ -96,9 +101,9 @@
           @if (searching()) {
             <ion-spinner name="crescent"></ion-spinner>
           } @else if (selectedPlace()) {
-            <ion-icon name="checkmark-circle" color="success"></ion-icon>
+            <ion-icon name="checkmark-circle" color="success" role="img" aria-label="OK"></ion-icon>
           } @else {
-            <ion-icon name="search-outline"></ion-icon>
+            <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
           }
         </span>
       </ion-input>
@@ -108,7 +113,7 @@
           <ion-list lines="full" class="places">
             @for (p of list; track p.name; let i = $index) {
               <ion-item button detail="false" (click)="choosePlace(p)" [class.top]="i === 0">
-                <ion-icon slot="start" name="location-outline"></ion-icon>
+                <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
                 <ion-label class="ion-text-wrap">
                   <b>{{ p.title || p.name }}</b>
                   @if (p.area) {
@@ -126,12 +131,17 @@
       }
     </div>
 
-    <ion-button expand="block" shape="round" [disabled]="busy()" (click)="save()">
-      @if (busy()) {
-        <ion-spinner name="crescent"></ion-spinner>
-      } @else {
-        {{ t('save_details') }}
-      }
-    </ion-button>
+    <div class="actions">
+      <ion-button fill="outline" shape="round" [disabled]="busy()" (click)="cancel()">
+        {{ t('cancel') }}
+      </ion-button>
+      <ion-button shape="round" [disabled]="busy()" (click)="save()">
+        @if (busy()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          {{ t('save_details') }}
+        }
+      </ion-button>
+    </div>
   </div>
 </ion-content>

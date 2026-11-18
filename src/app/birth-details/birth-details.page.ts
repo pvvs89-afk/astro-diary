@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -19,7 +19,8 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { checkmarkCircle, locationOutline, searchOutline } from 'ionicons/icons';
+import { arrowBackOutline, checkmarkCircle, locationOutline, searchOutline } from 'ionicons/icons';
+import { RecordModel } from 'pocketbase';
 import { I18nService } from '../i18n/i18n.service';
 import { LangButtonComponent } from '../i18n/lang-button.component';
 import { PbService, Place } from '../services/pb.service';
@@ -48,7 +49,7 @@ import { PbService, Place } from '../services/pb.service';
   templateUrl: './birth-details.page.html',
   styleUrls: ['./birth-details.page.scss'],
 })
-export class BirthDetailsPage {
+export class BirthDetailsPage implements OnInit {
   private pbs = inject(PbService);
   private router = inject(Router);
   private toast = inject(ToastController);
@@ -56,6 +57,8 @@ export class BirthDetailsPage {
   readonly t = this.i18n.t;
 
   readonly busy = signal(false);
+  /** Saved details being edited (null = first time, nothing to go back to). */
+  readonly existing = signal<RecordModel | null>(null);
 
   fullName = (this.pbs.user?.['name'] as string | undefined) ?? '';
   gender = '';
@@ -109,7 +112,60 @@ export class BirthDetailsPage {
   private searchSeq = 0;
 
   constructor() {
-    addIcons({ searchOutline, locationOutline, checkmarkCircle });
+    addIcons({ searchOutline, locationOutline, checkmarkCircle, arrowBackOutline });
+  }
+
+  /** When changing details, start from what is already saved. */
+  async ngOnInit(): Promise<void> {
+    try {
+      const b = await this.pbs.latestBirthDetails();
+      if (b) this.fill(b);
+    } catch {
+      /* offline - the form just starts empty */
+    }
+  }
+
+  private fill(b: RecordModel): void {
+    this.existing.set(b);
+    this.fullName = (b['full_name'] as string) || this.fullName;
+    this.gender = (b['gender'] as string) || '';
+    const dob = String(b['dob'] ?? '').slice(0, 10); // YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dob)) [this.year, this.month, this.day] = dob.split('-');
+    const m = /^(\d{2}):(\d{2})$/.exec(String(b['birth_time'] ?? ''));
+    if (m) {
+      const h = Number(m[1]);
+      this.hour = String(h % 12 === 0 ? 12 : h % 12).padStart(2, '0');
+      this.minute = m[2];
+      this.ampm = h < 12 ? 'AM' : 'PM';
+    }
+    const lat = Number(b['latitude']);
+    const lon = Number(b['longitude']);
+    if (b['birth_place'] && (lat || lon)) {
+      this.choosePlace({ name: String(b['birth_place']), lat, lon });
+    } else {
+      this.placeQuery = String(b['birth_place'] ?? '');
+    }
+  }
+
+  /** True when nothing differs from the saved details (no need to save again). */
+  private unchanged(): boolean {
+    const b = this.existing();
+    const p = this.selectedPlace();
+    if (!b || !p) return false;
+    return (
+      b['full_name'] === this.fullName.trim() &&
+      b['gender'] === this.gender &&
+      String(b['dob'] ?? '').slice(0, 10) === this.dob &&
+      b['birth_time'] === this.time &&
+      b['birth_place'] === p.name &&
+      Number(b['latitude']) === p.lat &&
+      Number(b['longitude']) === p.lon
+    );
+  }
+
+  /** Back / Cancel: return to Home without saving. */
+  async cancel(): Promise<void> {
+    await this.router.navigateByUrl('/home', { replaceUrl: true });
   }
 
   /** Called (debounced) while the user types in the birth place box. */
@@ -168,6 +224,11 @@ export class BirthDetailsPage {
     const problem = this.validate();
     if (problem) {
       await this.show(problem);
+      return;
+    }
+    if (this.unchanged()) {
+      // Nothing changed: don't save a copy (a new copy would make a new kundli).
+      await this.router.navigateByUrl('/home', { replaceUrl: true });
       return;
     }
     this.busy.set(true);

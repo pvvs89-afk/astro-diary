@@ -3,7 +3,7 @@
     <app-lang-button fill="outline" shape="round"></app-lang-button>
   </div>
 
-  <div class="wrap">
+  <form class="wrap" novalidate (ngSubmit)="submit()">
     <img class="logo" src="assets/logo/astro-diary-logo-white-tight.svg" alt="Astro Diary" />
     <p class="sub">{{ isRegister ? t('create_account') : t('welcome_back') }}</p>
 
@@ -13,7 +13,7 @@
         labelPlacement="floating"
         fill="outline"
         autocapitalize="words"
-        [(ngModel)]="name"
+        name="name" [(ngModel)]="name"
       ></ion-input>
 
       <ion-select
@@ -22,7 +22,7 @@
         fill="outline"
         interface="popover"
         [ngModel]="country()"
-        (ngModelChange)="country.set($event); state = ''"
+        name="country" (ngModelChange)="country.set($event); state = ''"
       >
         @for (c of countries(); track c.code) {
           <ion-select-option [value]="c.code">{{ c.name }} (+{{ c.dial }})</ion-select-option>
@@ -36,7 +36,7 @@
           labelPlacement="floating"
           fill="outline"
           interface="popover"
-          [(ngModel)]="state"
+          name="state" [(ngModel)]="state"
         >
           @for (s of indianStates; track s) {
             <ion-select-option [value]="s">{{ s }}</ion-select-option>
@@ -49,7 +49,7 @@
           fill="outline"
           autocapitalize="words"
           [maxlength]="60"
-          [(ngModel)]="state"
+          name="state" [(ngModel)]="state"
         ></ion-input>
       }
 
@@ -60,7 +60,7 @@
         type="tel"
         inputmode="numeric"
         [maxlength]="country() === 'IN' ? 10 : 15"
-        [(ngModel)]="phone"
+        name="phone" [(ngModel)]="phone"
       >
         <div slot="start">{{ dial() }}</div>
       </ion-input>
@@ -72,7 +72,7 @@
       fill="outline"
       type="email"
       autocomplete="email"
-      [(ngModel)]="email"
+      name="email" [(ngModel)]="email"
     ></ion-input>
 
     <ion-input
@@ -80,10 +80,11 @@
       labelPlacement="floating"
       fill="outline"
       type="password"
-      [(ngModel)]="password"
+      [autocomplete]="isRegister ? 'new-password' : 'current-password'"
+      name="password" [(ngModel)]="password"
     ></ion-input>
 
-    <ion-button expand="block" shape="round" [disabled]="busy()" (click)="submit()">
+    <ion-button expand="block" shape="round" type="submit" [disabled]="busy()">
       @if (busy()) {
         <ion-spinner name="crescent"></ion-spinner>
       } @else {
@@ -91,8 +92,10 @@
       }
     </ion-button>
 
-    <ion-button fill="clear" expand="block" class="ion-text-wrap" [disabled]="busy()" (click)="toggleMode()">
+    <ion-button fill="clear" expand="block" type="button" class="ion-text-wrap" [disabled]="busy()" (click)="toggleMode()">
       {{ isRegister ? t('have_account') : t('new_user') }}
     </ion-button>
-  </div>
+    <!-- Lets the Enter key submit from any field (and helps password managers). -->
+    <button type="submit" class="sr-only" tabindex="-1" aria-hidden="true"></button>
+  </form>
 </ion-content>

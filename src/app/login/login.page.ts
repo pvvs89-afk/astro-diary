@@ -74,6 +74,7 @@ export class LoginPage {
   }
 
   async submit(): Promise<void> {
+    if (this.busy()) return; // Enter pressed twice
     const problem = this.validate();
     if (problem) {
       await this.show(problem);
@@ -86,8 +87,8 @@ export class LoginPage {
         await this.pbs.register(this.name.trim(), this.fullPhone(), email, this.password, this.country(), this.state.trim().slice(0, 60));
       }
       await this.pbs.login(email, this.password);
-      const has = await this.pbs.hasBirthDetails();
-      await this.router.navigateByUrl(has ? '/home' : '/birth-details', { replaceUrl: true });
+      // Home lets the customer choose: My Kundli or Match Making.
+      await this.router.navigateByUrl('/home', { replaceUrl: true });
     } catch (e) {
       await this.show(this.i18n.err(e));
     } finally {

@@ -34,7 +34,9 @@
     "@capacitor/status-bar": "8.0.4",
     "@ionic/angular": "^9.0.0",
     "@photostructure/tz-lookup": "^11.8.0",
+    "html2canvas-pro": "^2.6.4",
     "ionicons": "^8.1.0",
+    "jspdf": "^4.2.1",
     "pocketbase": "^0.29.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
