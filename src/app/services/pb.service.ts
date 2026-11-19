@@ -6,7 +6,21 @@ import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 //   Browser (ionic serve):   http://127.0.0.1:8090
 //   Android emulator:        http://10.0.2.2:8090
 //   Real phone (same Wi-Fi): http://<laptop IPv4 from ipconfig>:8090
-export const SERVER_URL = 'http://127.0.0.1:8090';
+export const SERVER_URL = serverUrl();
+
+/**
+ * PocketBase address.
+ *  - On the online server the apps run at https://app.<domain> / https://admin.<domain>
+ *    and PocketBase at https://api.<domain> - worked out from the page address.
+ *  - Everywhere else (ionic serve, Android emulator build) the local server.
+ */
+function serverUrl(): string {
+  const local = 'http://127.0.0.1:8090';
+  if (typeof location === 'undefined') return local;
+  const m = /^(?:app|admin)\.(.+)$/.exec(location.hostname);
+  return location.protocol === 'https:' && m ? `https://api.${m[1]}` : local;
+}
+
 
 export type PlaceKind = 'city' | 'town' | 'village' | 'locality' | 'other';
 
