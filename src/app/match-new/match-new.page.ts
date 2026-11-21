@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonBackButton,
+  IonMenuButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -27,6 +28,7 @@ import { PersonFormComponent } from '../shared/person-form.component';
     IonTitle,
     IonButtons,
     IonBackButton,
+    IonMenuButton,
     IonButton,
     IonContent,
     IonSpinner,

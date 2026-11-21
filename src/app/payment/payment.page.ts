@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonBackButton,
+  IonMenuButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -25,7 +26,7 @@ type Step = 'review' | 'paying' | 'success' | 'failed' | 'not_ready';
 @Component({
   selector: 'app-payment',
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonContent, IonIcon, IonSpinner, LangButtonComponent],
+  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonMenuButton, IonButton, IonContent, IonIcon, IonSpinner, LangButtonComponent],
   templateUrl: './payment.page.html',
   styleUrls: ['./payment.page.scss'],
 })

@@ -1,0 +1,161 @@
+<ion-header>
+  <ion-toolbar class="chat-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button [attr.aria-label]="t('back')" defaultHref="/kundli"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="contact">
+        <span class="c-avatar" aria-hidden="true"><ion-icon name="planet-outline"></ion-icon>
+          @if (comm.astroOnline()) { <span class="c-dot"></span> }
+        </span>
+        <span class="c-text">
+          <b>{{ tx().msg_astrologer }}</b>
+          <small role="status" aria-live="polite" [class.on]="comm.astroOnline() && !comm.astroTyping()">
+            @if (comm.astroTyping()) {
+              <i class="typing-text">{{ tx().st_typing }}</i>
+            } @else if (comm.astroOnline()) {
+              {{ tx().st_online }}
+            } @else if (comm.astroLastSeen(); as ls) {
+              {{ text('st_last_seen', { time: time(ls.toISOString()) }) }}
+            } @else {
+              {{ tx().st_offline }}
+            }
+          </small>
+        </span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="tb-call audio" (click)="calls.call('audio')" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_audio" [title]="tx().call_audio">
+        <ion-icon slot="icon-only" name="call"></ion-icon>
+      </ion-button>
+      <ion-button class="tb-call video" (click)="calls.call('video')" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_video" [title]="tx().call_video">
+        <ion-icon slot="icon-only" name="videocam"></ion-icon>
+      </ion-button>
+      <ion-button class="tb-plain" (click)="pickTheme()" [attr.aria-label]="tx().prof_theme" [title]="tx().prof_theme">
+        <ion-icon slot="icon-only" name="color-palette-outline"></ion-icon>
+      </ion-button>
+      <ion-button class="tb-plain" routerLink="/my-location" [attr.aria-label]="t('location_menu')" [title]="t('location_menu')">
+        <ion-icon slot="icon-only" name="location-outline"></ion-icon>
+      </ion-button>
+      <app-lang-button></app-lang-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="chat-bg">
+  <div class="chat-wrap">
+    <p class="sys">{{ tx().msg_intro }}</p>
+    @if (!comm.astroOnline()) { <p class="sys warn">{{ tx().call_offline_note }}</p> }
+
+    @if (loading()) {
+      <div class="center" role="status"><ion-spinner name="crescent" aria-hidden="true"></ion-spinner><span class="sr-only">{{ t('loading') }}</span></div>
+    } @else {
+      <ol class="chat" aria-live="polite" [attr.aria-label]="tx().msg_title">
+        @for (m of items(); track m.id; let i = $index) {
+          @if (dayChanged(i)) {
+            <li class="day" aria-hidden="true"><span>{{ day(m['created']) }}</span></li>
+          }
+          @if (isCallLog(m)) {
+            <li class="call-log">
+              <span><ion-icon [name]="callIcon(m)" aria-hidden="true"></ion-icon> {{ m['note'] }} · {{ clockTime(m['created']) }}</span>
+            </li>
+          } @else {
+            <li class="row" [class.me]="m['sender'] === 'customer'">
+              <div class="bubble">
+                <span class="sr-only">{{ m['sender'] === 'customer' ? tx().msg_you : tx().msg_astrologer }}:</span>
+                @for (f of files(m); track f) {
+                  @switch (fileKind(f)) {
+                    @case ('photo') {
+                      <a [href]="url(m, f)" target="_blank" rel="noopener" class="photo">
+                        <img [src]="url(m, f, '300x300')" [alt]="tx().msg_photo" loading="lazy" />
+                      </a>
+                    }
+                    @case ('video') { <video [src]="url(m, f)" controls preload="metadata" [attr.aria-label]="tx().msg_video"></video> }
+                    @case ('audio') { <audio [src]="url(m, f)" controls preload="metadata" [attr.aria-label]="tx().msg_record"></audio> }
+                    @default { <a [href]="url(m, f)" target="_blank" rel="noopener">📎 {{ f }}</a> }
+                  }
+                }
+                @if (m['lat'] || m['lon']) {
+                  <a class="loc" [href]="mapsLink(m['lat'], m['lon'])" target="_blank" rel="noopener">
+                    <ion-icon name="location" aria-hidden="true"></ion-icon> {{ m['place'] || (m['lat'] + ', ' + m['lon']) }}
+                  </a>
+                }
+                @if (m['note']) { <p class="note">{{ m['note'] }}</p> }
+                <span class="meta">
+                  {{ clockTime(m['created']) }}
+                  @if (m['sender'] === 'customer') {
+                    <ion-icon [name]="m['seen'] ? 'checkmark-done' : 'checkmark'" [class.seen]="m['seen']"
+                              [attr.aria-label]="m['seen'] ? tx().msg_seen : tx().msg_sent"></ion-icon>
+                  }
+                </span>
+              </div>
+              @if (m['sender'] === 'customer') {
+                <button type="button" class="del" (click)="remove(m)" [attr.aria-label]="tx().msg_delete" [title]="tx().msg_delete">
+                  <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+                </button>
+              }
+            </li>
+          }
+        } @empty {
+          <li class="sys">{{ tx().msg_empty }}</li>
+        }
+        @if (comm.astroTyping()) {
+          <li class="row">
+            <div class="bubble typing" [attr.aria-label]="tx().msg_astrologer + ' ' + tx().st_typing"><span></span><span></span><span></span></div>
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</ion-content>
+
+<ion-footer class="chat-footer">
+  <div class="composer">
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+
+    @if (pending().length) {
+      <ul class="pending" [attr.aria-label]="tx().msg_photo + ', ' + tx().msg_video + ', ' + tx().msg_record">
+        @for (p of pending(); track p.preview; let i = $index) {
+          <li>
+            @switch (p.kind) {
+              @case ('photo') { <img [src]="p.preview" [alt]="tx().msg_photo" /> }
+              @case ('video') { <video [src]="p.preview" muted preload="metadata" [attr.aria-label]="tx().msg_video"></video> }
+              @case ('audio') { <audio [src]="p.preview" controls [attr.aria-label]="tx().msg_record"></audio> }
+              @default { <span>📎 {{ p.file.name }}</span> }
+            }
+            <button type="button" class="x" (click)="removePending(i)" [attr.aria-label]="tx().msg_remove">✕</button>
+          </li>
+        }
+      </ul>
+    }
+    @if (attachLoc()) { <p class="chip"><ion-icon name="location" aria-hidden="true"></ion-icon> {{ tx().msg_attach_loc }}</p> }
+    @if (recording()) { <p class="chip rec" role="status"><span class="rec-dot" aria-hidden="true"></span> {{ tx().msg_recording }} {{ recSecs() }}s</p> }
+
+    <div class="bar">
+      <div class="pill">
+        <label class="ib" [title]="tx().msg_photo">
+          <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
+          <input type="file" accept="image/*" multiple (change)="pick($event)" [attr.aria-label]="tx().msg_photo" />
+        </label>
+        <label class="ib" [title]="tx().msg_video">
+          <ion-icon name="videocam-outline" aria-hidden="true"></ion-icon>
+          <input type="file" accept="video/*" (change)="pick($event)" [attr.aria-label]="tx().msg_video" />
+        </label>
+        <button type="button" class="ib" [class.on]="attachLoc()" [attr.aria-pressed]="attachLoc()" (click)="attachLoc.set(!attachLoc())"
+                [attr.aria-label]="tx().msg_attach_loc" [title]="tx().msg_attach_loc">
+          <ion-icon [name]="attachLoc() ? 'location' : 'location-outline'" aria-hidden="true"></ion-icon>
+        </button>
+        <textarea class="field" rows="1" maxlength="2000" [placeholder]="tx().msg_placeholder" [attr.aria-label]="tx().msg_placeholder"
+                  [value]="note()" (input)="onType($event)"></textarea>
+      </div>
+      <button type="button" class="round mic" [class.rec]="recording()" [attr.aria-pressed]="recording()" (click)="toggleRecording()"
+              [attr.aria-label]="recording() ? text('msg_stop', { s: recSecs() }) : tx().msg_record" [title]="tx().msg_record">
+        <ion-icon [name]="recording() ? 'stop' : 'mic'" aria-hidden="true"></ion-icon>
+      </button>
+      <button type="button" class="round send" (click)="send()" [disabled]="sending() || recording()" [attr.aria-label]="tx().msg_send" [title]="tx().msg_send">
+        @if (sending()) { <ion-spinner name="crescent"></ion-spinner> } @else { <ion-icon name="send" aria-hidden="true"></ion-icon> }
+      </button>
+    </div>
+  </div>
+</ion-footer>

@@ -158,6 +158,41 @@ export class PbService {
     return res.items ?? [];
   }
 
+  private herePromise: Promise<Place | null> | null = null;
+
+  /**
+   * The device's current location as a place (asked once per app start, shared by
+   * every form). null when the customer refuses, location is off, or it times out.
+   */
+  currentPlace(): Promise<Place | null> {
+    if (!this.herePromise) {
+      this.herePromise = new Promise<GeolocationPosition | null>((resolve) => {
+        if (!('geolocation' in navigator)) return resolve(null);
+        navigator.geolocation.getCurrentPosition(resolve, () => resolve(null), {
+          enableHighAccuracy: false,
+          timeout: 10_000,
+          maximumAge: 10 * 60_000,
+        });
+      }).then(async (pos) => {
+        if (!pos) return null;
+        try {
+          const res = await this.pb.send<{ item: Place | null }>('/api/astro/places/reverse', {
+            query: { lat: String(pos.coords.latitude), lon: String(pos.coords.longitude) },
+            requestKey: null,
+          });
+          return res.item ?? null;
+        } catch {
+          return null;
+        }
+      });
+      // Allow a retry on the next visit if it failed.
+      void this.herePromise.then((p) => {
+        if (!p) this.herePromise = null;
+      });
+    }
+    return this.herePromise;
+  }
+
   /** Latest birth details and kundli (if already generated). */
   kundliState(): Promise<KundliState> {
     return this.pb.send<KundliState>('/api/astro/kundli', { method: 'GET' });

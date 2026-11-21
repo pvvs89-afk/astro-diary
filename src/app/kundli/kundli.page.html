@@ -2,6 +2,7 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button [attr.aria-label]="t('back')" defaultHref="/home"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ t('my_kundli') }}</ion-title>
     <ion-buttons slot="end">
@@ -52,7 +53,6 @@
                 {{ t('generate') }}
               }
             </ion-button>
-            <ion-button expand="block" fill="clear" (click)="editBirthDetails()">{{ t('change_birth') }}</ion-button>
           }
         </div>
       } @else if (view(); as v) {
@@ -95,29 +95,13 @@
 
         <!-- South Indian chart -->
         @if (v.planets.length) {
+          <app-chart-style-toggle class="no-pdf"></app-chart-style-toggle>
           <h3>{{ t('rasi_chart') }}</h3>
-          <div class="chart" role="img" [attr.aria-label]="chartSummary(v.chart, t('rasi_chart'), t('retro'))">
-            @for (c of v.chart; track c.rasiId) {
-              <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
-                <span class="rasi">{{ c.rasi }}</span>
-                <span class="items">
-                  @for (it of c.items; track $index) {
-                    <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
-                  }
-                </span>
-              </div>
-            }
-            <div class="center-cell" aria-hidden="true">
-              <b>{{ t('rasi') }}</b>
-              <span>{{ t('south_indian') }}</span>
-            </div>
-          </div>
-
-          <!-- Navamsa (D9) chart -->
-          <h3>{{ t('navamsa_chart') }}</h3>
-          @if (v.navamsa; as nav) {
-            <div class="chart" role="img" [attr.aria-label]="chartSummary(nav, t('navamsa_chart'), t('retro'))">
-              @for (c of nav; track c.rasiId) {
+          @if (cs.style() === 'north') {
+            <app-north-chart [cells]="v.chart" [label]="chartSummary(v.chart, t('rasi_chart'), t('retro'))" [retro]="t('retro')"></app-north-chart>
+          } @else {
+            <div class="chart" role="img" [attr.aria-label]="chartSummary(v.chart, t('rasi_chart'), t('retro'))">
+              @for (c of v.chart; track c.rasiId) {
                 <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
                   <span class="rasi">{{ c.rasi }}</span>
                   <span class="items">
@@ -128,10 +112,35 @@
                 </div>
               }
               <div class="center-cell" aria-hidden="true">
-                <b>{{ t('navamsa') }}</b>
-                <span>D9</span>
+                <b>{{ t('rasi') }}</b>
+                <span>{{ t('south_indian') }}</span>
               </div>
             </div>
+          }
+
+          <!-- Navamsa (D9) chart -->
+          <h3>{{ t('navamsa_chart') }}</h3>
+          @if (v.navamsa; as nav) {
+            @if (cs.style() === 'north') {
+              <app-north-chart [cells]="nav" [label]="chartSummary(nav, t('navamsa_chart'), t('retro'))" [retro]="t('retro')"></app-north-chart>
+            } @else {
+              <div class="chart" role="img" [attr.aria-label]="chartSummary(nav, t('navamsa_chart'), t('retro'))">
+                @for (c of nav; track c.rasiId) {
+                  <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
+                    <span class="rasi">{{ c.rasi }}</span>
+                    <span class="items">
+                      @for (it of c.items; track $index) {
+                        <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
+                      }
+                    </span>
+                  </div>
+                }
+                <div class="center-cell" aria-hidden="true">
+                  <b>{{ t('navamsa') }}</b>
+                  <span>D9</span>
+                </div>
+              </div>
+            }
           } @else {
             <div class="card">
               <p>{{ t('navamsa_not_ready') }}</p>

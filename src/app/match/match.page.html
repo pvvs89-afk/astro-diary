@@ -2,6 +2,7 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button [attr.aria-label]="t('back')" defaultHref="/matches"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ t('match_result') }}</ion-title>
     <ion-buttons slot="end">
@@ -134,6 +135,7 @@
         }
         <!-- Boy | Girl side by side: charts row, then dasha row -->
         <h3>{{ t('rasi_chart') }} &amp; {{ t('navamsa_chart') }}</h3>
+        <app-chart-style-toggle class="no-pdf"></app-chart-style-toggle>
         <div class="pair">
           <app-person-charts part="charts" tone="boy" [title]="t('boy')" [name]="v.boyName" [data]="personData('boy')" [birthIso]="birthIso('boy')"></app-person-charts>
           <app-person-charts part="charts" tone="girl" [title]="t('girl')" [name]="v.girlName" [data]="personData('girl')" [birthIso]="birthIso('girl')"></app-person-charts>

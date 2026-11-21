@@ -32,9 +32,11 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
+/* The phone's own dark/light setting is NOT followed. Dark is used only when the
+   person picks the "Dark" app theme (the app adds the ion-palette-dark class). */
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import "@ionic/angular/css/palettes/dark.class.css";
+/* @import '@ionic/angular/css/palettes/dark.system.css'; */
 
 /* ---------------------------------------------------------------------------
  * Accessibility

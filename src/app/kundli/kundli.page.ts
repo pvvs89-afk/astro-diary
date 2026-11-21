@@ -8,6 +8,7 @@ import {
   ActionSheetController,
   IonHeader,
   IonIcon,
+  IonMenuButton,
   IonSpinner,
   IonTitle,
   IonToolbar,
@@ -19,16 +20,22 @@ import { I18nService } from '../i18n/i18n.service';
 import { LangButtonComponent } from '../i18n/lang-button.component';
 import { PbService } from '../services/pb.service';
 import { askPdfLanguage, nextPaint } from '../shared/pdf-language';
+import { ChartStyleService } from '../services/chart-style.service';
+import { ChartStyleToggleComponent } from '../shared/chart-style-toggle.component';
+import { NorthChartComponent } from '../shared/north-chart.component';
 import { birthText, buildKundliView, chartSummary } from './kundli-view';
 
 @Component({
   selector: 'app-kundli',
   standalone: true,
   imports: [
+    NorthChartComponent,
+    ChartStyleToggleComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
     IonButtons,
+    IonMenuButton,
     IonBackButton,
     IonButton,
     IonContent,
@@ -45,6 +52,7 @@ export class KundliPage implements OnInit {
   private i18n = inject(I18nService);
   private sheets = inject(ActionSheetController);
   readonly t = this.i18n.t;
+  readonly cs = inject(ChartStyleService);
   readonly chartSummary = chartSummary;
 
   readonly loading = signal(true);

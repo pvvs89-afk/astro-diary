@@ -34,6 +34,26 @@ export const routes: Routes = [
     loadComponent: () => import('./kundli/kundli.page').then((m) => m.KundliPage),
   },
   {
+    path: 'tarabalam',
+    canActivate: [authGuard],
+    loadComponent: () => import('./tarabalam/tarabalam.page').then((m) => m.TarabalamPage),
+  },
+  {
+    path: 'messages',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/messages.page').then((m) => m.MessagesPage),
+  },
+  {
+    path: 'my-location',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/location.page').then((m) => m.LocationPage),
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/profile.page').then((m) => m.ProfilePage),
+  },
+  {
     path: 'matches',
     canActivate: [authGuard],
     loadComponent: () => import('./matches/matches.page').then((m) => m.MatchesPage),

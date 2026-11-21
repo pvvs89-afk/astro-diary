@@ -1,0 +1,125 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [attr.aria-label]="t('back')" defaultHref="/kundli"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ tx().title }}</ion-title>
+    <ion-buttons slot="end">
+      <app-lang-button></app-lang-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrap">
+    @if (loading()) {
+      <div class="center" role="status" aria-live="polite">
+        <ion-spinner name="crescent" aria-hidden="true"></ion-spinner><span class="sr-only">{{ t('loading') }}</span>
+      </div>
+    } @else if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+      <ion-button (click)="load()">{{ tx().retry }}</ion-button>
+    } @else if (birthStar() === null) {
+      <p>{{ tx().no_kundli }}</p>
+      <ion-button routerLink="/kundli">{{ tx().open_kundli }}</ion-button>
+    } @else {
+      <p class="muted intro">{{ tx().intro }}</p>
+
+      <!-- Birth star + where -->
+      <section class="card top" [attr.aria-label]="tx().birth_star">
+        <div>
+          <small class="muted">{{ tx().birth_star }}</small>
+          <b class="big">{{ star(birthStar()!) }}</b>
+        </div>
+        @if (where(); as w) {
+          <small class="muted where">
+            📍 {{ w.fallback ? tx().location_birth : fill(tx().location, { place: w.name }) }}
+          </small>
+        }
+      </section>
+
+      <!-- Right now -->
+      @if (current(); as c) {
+        <section class="card now" [class]="'card now r-' + result(c.tara)" aria-live="polite">
+          <h2>{{ tx().now }}</h2>
+          <p class="line">
+            <b>{{ star(c.index) }}</b>
+            <span class="muted">{{ fill(tx().till, { time: time(c.end, now()) }) }}</span>
+          </p>
+          <p class="line">
+            <span class="tag" [class]="'tag r-' + result(c.tara)">{{ tx().result[result(c.tara)] }}</span>
+            <b>{{ tx().names[c.tara] }} {{ tx().tara }}</b>
+          </p>
+          <p>{{ tx().meaning[c.tara] }}</p>
+          @if (tx().remedies[c.tara]) {
+            <p class="remedy"><b>{{ tx().remedy }}:</b> {{ tx().remedies[c.tara] }}</p>
+          }
+          <p class="muted small">
+            {{ tx().then }} {{ star(c.next) }} – {{ tx().names[c.nextTara] }} ({{ tx().result[result(c.nextTara)] }})
+          </p>
+        </section>
+      }
+
+      <!-- 7 days -->
+      <h2>{{ tx().week }}</h2>
+      <ul class="days">
+        @for (d of week(); track d.day) {
+          <li class="day" [class.today]="isToday(d.day)" [class]="'day r-' + result(d.tara)">
+            <div class="day-head">
+              <b>{{ isToday(d.day) ? tx().today + ' · ' : '' }}{{ dayLabel(d.day) }}</b>
+              <small class="muted">{{ fill(tx().sunrise, { time: time(d.sunrise) }) }}</small>
+            </div>
+            <p class="line">
+              <b>{{ star(d.star) }}</b>
+              <span class="muted small">{{ fill(tx().till, { time: time(d.starEnd, d.day) }) }}</span>
+            </p>
+            <p class="line">
+              <span class="tag" [class]="'tag r-' + result(d.tara)">{{ tx().result[result(d.tara)] }}</span>
+              {{ tx().names[d.tara] }} {{ tx().tara }}
+            </p>
+            <p class="small">{{ tx().meaning[d.tara] }}</p>
+            @if (tx().remedies[d.tara]) {
+              <p class="remedy small"><b>{{ tx().remedy }}:</b> {{ tx().remedies[d.tara] }}</p>
+            }
+            @if (d.next; as n) {
+              <p class="muted small">
+                {{ tx().then }} {{ star(n.star) }} {{ fill(tx().from, { time: time(n.from, d.day) }) }} –
+                {{ tx().names[n.tara] }} ({{ tx().result[result(n.tara)] }})
+              </p>
+            }
+          </li>
+        }
+      </ul>
+
+      <!-- All 27 stars -->
+      <h2>{{ tx().all }}</h2>
+      <table class="stars">
+        <caption class="sr-only">{{ tx().all }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{{ tx().tara }}</th>
+            <th scope="col">{{ tx().stars }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (g of groups(); track g.tara) {
+            <tr>
+              <th scope="row">
+                {{ g.tara }}. {{ tx().names[g.tara] }}
+                <span class="tag" [class]="'tag r-' + result(g.tara)">{{ tx().result[result(g.tara)] }}</span>
+              </th>
+              <td>
+                @for (s of g.stars; track s; let last = $last) {
+                  <span [class.mine]="s === birthStar()">{{ star(s) }}</span>{{ last ? '' : ', ' }}
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <p class="muted small note">{{ tx().note }}</p>
+    }
+  </div>
+</ion-content>

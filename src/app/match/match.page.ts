@@ -9,6 +9,7 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonMenuButton,
   IonSpinner,
   IonTitle,
   IonToolbar,
@@ -21,6 +22,7 @@ import { LangButtonComponent } from '../i18n/lang-button.component';
 import { PbService } from '../services/pb.service';
 import { elementToPdf, safeFileName, saveBlob } from '../shared/pdf-export';
 import { PersonChartsComponent } from '../shared/person-charts.component';
+import { ChartStyleToggleComponent } from '../shared/chart-style-toggle.component';
 import { askPdfLanguage, nextPaint } from '../shared/pdf-language';
 import { buildMatchView } from './match-view';
 
@@ -34,11 +36,13 @@ import { buildMatchView } from './match-view';
     IonTitle,
     IonButtons,
     IonBackButton,
+    IonMenuButton,
     IonButton,
     IonContent,
     IonSpinner,
     IonIcon,
     PersonChartsComponent,
+    ChartStyleToggleComponent,
     LangButtonComponent,
   ],
   templateUrl: './match.page.html',

@@ -64,6 +64,11 @@ export const en = {
   namaste: 'Namaste!',
   namaste_name: 'Namaste, {name}!',
   my_kundli: 'My Kundli',
+  tarabalam: 'Tara Balam',
+  messages_menu: 'Message Astrologer',
+  messages_sub: 'Messages',
+  location_menu: 'My Location',
+  profile_menu: 'My Profile',
   kundli_sub: 'Rasi chart, nakshatra, planets, dasha and yogas',
   view_kundli: 'View my kundli',
   change_birth: 'Change birth details',
@@ -91,6 +96,8 @@ export const en = {
   rasi_chart: 'Rasi chart',
   rasi: 'Rasi',
   south_indian: 'South Indian',
+  north_indian: 'North Indian',
+  chart_style: 'Chart style',
   navamsa_chart: 'Navamsa chart',
   navamsa: 'Navamsa',
   navamsa_not_ready: 'Your Navamsa chart is not ready yet.',
@@ -193,6 +200,10 @@ export const en = {
   payments_not_ready: 'Online payment is not available yet. We will enable it very soon.',
   plan_not_found: 'This plan is no longer available.',
   pay_terms: 'By paying you agree to our terms. The plan does not renew automatically.',
+  menu: 'Menu',
+  home: 'Home',
+  subscription: 'Subscription',
+  kundli_section: 'Kundli',
 };
 
 export type Dict = typeof en;

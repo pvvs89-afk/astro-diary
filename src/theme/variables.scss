@@ -1,8 +1,13 @@
-// Astro Diary brand colours: blue and white.
-// Light mode: navy toolbars/buttons. Dark mode: light-blue toolbars/buttons on deep navy.
-// This file loads after the dark-mode palette, so these values win.
+// Astro Diary app themes, chosen by each person in the app (the phone's dark/light
+// mode is ignored). The app puts one class on <html>:
+//   (none)              Classic navy - default
+//   app-theme-lavender  Soft lavender
+//   app-theme-saffron   Warm saffron
+//   app-theme-dark      Dark (together with Ionic's ion-palette-dark class)
+// This file loads after Ionic's palettes, so these values win.
 
 :root {
+  color-scheme: light;
   --ion-color-primary: #13245e;
   --ion-color-primary-rgb: 19, 36, 94;
   --ion-color-primary-contrast: #ffffff;
@@ -18,26 +23,65 @@
   --ion-color-secondary-tint: #3b73ed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ion-color-primary: #9db4ff;
-    --ion-color-primary-rgb: 157, 180, 255;
-    --ion-color-primary-contrast: #0b1438;
-    --ion-color-primary-contrast-rgb: 11, 20, 56;
-    --ion-color-primary-shade: #8a9ee0;
-    --ion-color-primary-tint: #a7bcff;
-  }
+// Soft lavender: purple bars and buttons, faint lavender page.
+:root.app-theme-lavender {
+  --ion-color-primary: #534ab7;
+  --ion-color-primary-rgb: 83, 74, 183;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #4941a1;
+  --ion-color-primary-tint: #645cbe;
+  --ion-color-secondary: #1d9e75;
+  --ion-color-secondary-rgb: 29, 158, 117;
+  --ion-color-secondary-shade: #1a8b67;
+  --ion-color-secondary-tint: #34a883;
+}
+:root.app-theme-lavender.md,
+:root.app-theme-lavender.ios {
+  --ion-background-color: #faf9ff;
+  --ion-background-color-rgb: 250, 249, 255;
+  --ion-item-background: #faf9ff;
+}
 
-  // Deep navy instead of plain black, to match the logo.
-  :root.md,
-  :root.ios {
-    --ion-background-color: #070d26;
-    --ion-background-color-rgb: 7, 13, 38;
-    --ion-toolbar-background: #0b1438;
-    --ion-item-background: #0b1438;
-    --ion-card-background: #0e1942;
-    --ion-tab-bar-background: #0b1438;
-  }
+// Warm saffron: maroon bars and buttons, cream page.
+:root.app-theme-saffron {
+  --ion-color-primary: #993c1d;
+  --ion-color-primary-rgb: 153, 60, 29;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #87351a;
+  --ion-color-primary-tint: #a35034;
+  --ion-color-secondary: #ba7517;
+  --ion-color-secondary-rgb: 186, 117, 23;
+  --ion-color-secondary-shade: #a46714;
+  --ion-color-secondary-tint: #c1832e;
+}
+:root.app-theme-saffron.md,
+:root.app-theme-saffron.ios {
+  --ion-background-color: #fffbf3;
+  --ion-background-color-rgb: 255, 251, 243;
+  --ion-item-background: #fffbf3;
+  --ion-card-background: #ffffff;
+}
+
+// Dark: light-blue bars/buttons on deep navy (matches the logo).
+:root.app-theme-dark {
+  color-scheme: dark;
+  --ion-color-primary: #9db4ff;
+  --ion-color-primary-rgb: 157, 180, 255;
+  --ion-color-primary-contrast: #0b1438;
+  --ion-color-primary-contrast-rgb: 11, 20, 56;
+  --ion-color-primary-shade: #8a9ee0;
+  --ion-color-primary-tint: #a7bcff;
+}
+:root.app-theme-dark.md,
+:root.app-theme-dark.ios {
+  --ion-background-color: #070d26;
+  --ion-background-color-rgb: 7, 13, 38;
+  --ion-toolbar-background: #0b1438;
+  --ion-item-background: #0b1438;
+  --ion-card-background: #0e1942;
+  --ion-tab-bar-background: #0b1438;
 }
 
 

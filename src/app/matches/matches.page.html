@@ -2,6 +2,7 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button [attr.aria-label]="t('back')" defaultHref="/home"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ t('my_matches') }}</ion-title>
     <ion-buttons slot="end">
@@ -12,8 +13,6 @@
 
 <ion-content class="ion-padding">
   <div class="wrap">
-    <ion-button expand="block" shape="round" (click)="newMatch()">+ {{ t('start_match') }}</ion-button>
-
     @if (loading()) {
       <div class="center" role="status" aria-live="polite"><ion-spinner name="crescent" aria-hidden="true"></ion-spinner><span class="sr-only">{{ t('loading') }}</span></div>
     } @else if (error()) {

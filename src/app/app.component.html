@@ -1,3 +1,119 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <!-- Side menu (customer). Hidden on the login page. -->
+  <ion-menu contentId="main" menuId="main" type="overlay" [disabled]="!menuOn()" (ionWillOpen)="refreshUser()">
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title><span class="ad-icon ad-emblem title-icon" aria-hidden="true"></span> Astro Diary</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      @if (userName() || userEmail()) {
+        <ion-menu-toggle [autoHide]="false">
+          <a class="menu-user" routerLink="/profile" [attr.aria-label]="t('profile_menu') + ': ' + userName()">
+            @if (avatar()) {
+              <img class="menu-avatar" [src]="avatar()" alt="" />
+            } @else {
+              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            }
+            <div>
+              <b>{{ userName() }}</b>
+              <small>{{ userEmail() }}</small>
+            </div>
+          </a>
+        </ion-menu-toggle>
+        <div class="me-status" role="group" [attr.aria-label]="ct().me_status">
+          <span class="me-label">{{ ct().me_status }}</span>
+          <div class="me-switch">
+            <button type="button" [class.on]="!hideOnline()" [attr.aria-pressed]="!hideOnline()" [disabled]="statusBusy()" (click)="setOnline(true)">
+              <span class="sdot green" aria-hidden="true"></span> {{ ct().me_online }}
+            </button>
+            <button type="button" [class.on]="hideOnline()" [attr.aria-pressed]="hideOnline()" [disabled]="statusBusy()" (click)="setOnline(false)">
+              <span class="sdot" aria-hidden="true"></span> {{ ct().me_offline }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <nav [attr.aria-label]="t('menu')">
+        <ion-list lines="none" class="menu-list">
+          <!-- 1. Kundli (opens / closes its sub-menu) -->
+          <ion-item button [detail]="false" class="menu-main" (click)="kundliOpen.set(!kundliOpen())"
+                    [attr.aria-expanded]="kundliOpen()" aria-controls="kundli-sub">
+            <ion-icon slot="start" name="planet-outline" aria-hidden="true"></ion-icon>
+            <ion-label>{{ t('kundli_section') }}</ion-label>
+            <ion-icon slot="end" class="chev" [name]="kundliOpen() ? 'chevron-up-outline' : 'chevron-down-outline'" aria-hidden="true"></ion-icon>
+          </ion-item>
+          @if (kundliOpen()) {
+            <div id="kundli-sub" class="submenu">
+              <ion-menu-toggle [autoHide]="false">
+                <ion-item button [detail]="false" routerLink="/kundli" routerLinkActive="selected" ariaCurrentWhenActive="page">
+                  <ion-icon slot="start" name="person-outline" aria-hidden="true"></ion-icon>
+                  <ion-label>{{ t('my_kundli') }}</ion-label>
+                </ion-item>
+                <ion-item button [detail]="false" routerLink="/tarabalam" routerLinkActive="selected" ariaCurrentWhenActive="page">
+                  <ion-icon slot="start" name="star-outline" aria-hidden="true"></ion-icon>
+                  <ion-label>{{ t('tarabalam') }}</ion-label>
+                </ion-item>
+                <ion-item button [detail]="false" routerLink="/match-new" routerLinkActive="selected" ariaCurrentWhenActive="page">
+                  <ion-icon slot="start" name="heart-outline" aria-hidden="true"></ion-icon>
+                  <ion-label>{{ t('match_making') }}</ion-label>
+                </ion-item>
+                <ion-item button [detail]="false" routerLink="/matches" routerLinkActive="selected" ariaCurrentWhenActive="page">
+                  <ion-icon slot="start" name="list-outline" aria-hidden="true"></ion-icon>
+                  <ion-label>{{ t('my_matches') }}</ion-label>
+                </ion-item>
+                <ion-item button [detail]="false" routerLink="/birth-details" routerLinkActive="selected" ariaCurrentWhenActive="page">
+                  <ion-icon slot="start" name="create-outline" aria-hidden="true"></ion-icon>
+                  <ion-label>{{ t('change_birth') }}</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            </div>
+          }
+
+          <!-- 2. Message Astrologer (chat; My Location opens from the 📍 button there) -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/messages" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="chatbubbles-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ t('messages_menu') }}</ion-label>
+              @if (astroOnline()) { <span slot="end" class="online-dot" title="Online" aria-label="Online"></span> }
+              @if (unread()) {
+                <span slot="end" class="badge" [attr.aria-label]="unread() + ' new'">{{ unread() }}</span>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- My Profile -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/profile" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="person-circle-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ t('profile_menu') }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- 3. Subscription (plans page) -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/home" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="card-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ t('subscription') }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+      </nav>
+    </ion-content>
+
+    <ion-footer>
+      <ion-toolbar>
+        <ion-item button [detail]="false" lines="none" class="menu-logout" (click)="logout()">
+          <ion-icon slot="start" name="log-out-outline" color="danger" aria-hidden="true"></ion-icon>
+          <ion-label color="danger">{{ t('logout') }}</ion-label>
+        </ion-item>
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
+
+  <ion-router-outlet id="main"></ion-router-outlet>
+
+  <!-- Internet audio / video call window (over every page) -->
+  <app-call-overlay></app-call-overlay>
 </ion-app>

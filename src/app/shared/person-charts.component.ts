@@ -1,6 +1,8 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { I18nService } from '../i18n/i18n.service';
 import { ChartCell, buildKundliView, chartSummary } from '../kundli/kundli-view';
+import { NorthChartComponent } from './north-chart.component';
+import { ChartStyleService } from '../services/chart-style.service';
 import { moonLongitude, vimshottari } from './vimshottari';
 
 /**
@@ -10,6 +12,7 @@ import { moonLongitude, vimshottari } from './vimshottari';
 @Component({
   selector: 'app-person-charts',
   standalone: true,
+  imports: [NorthChartComponent],
   template: `
     <h4 class="who">{{ title() }}: <b>{{ name() }}</b></h4>
     @if (view(); as v) {
@@ -20,25 +23,11 @@ import { moonLongitude, vimshottari } from './vimshottari';
       <div class="charts">
         <div>
           <h4>{{ t('rasi_chart') }}</h4>
-          <div class="chart" role="img" [attr.aria-label]="summary(v.chart, t('rasi_chart'))">
-            @for (c of v.chart; track c.rasiId) {
-              <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
-                <span class="rasi">{{ c.rasi }}</span>
-                <span class="items">
-                  @for (it of c.items; track $index) {
-                    <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
-                  }
-                </span>
-              </div>
-            }
-            <div class="center-cell" aria-hidden="true"><b>{{ t('rasi') }}</b><span>{{ name() }}</span></div>
-          </div>
-        </div>
-        <div>
-          <h4>{{ t('navamsa_chart') }}</h4>
-          @if (navamsa(); as nav) {
-            <div class="chart" role="img" [attr.aria-label]="summary(nav, t('navamsa_chart'))">
-              @for (c of nav; track c.rasiId) {
+          @if (cs.style() === 'north') {
+            <app-north-chart [cells]="v.chart" [label]="summary(v.chart, t('rasi_chart'))" [retro]="t('retro')"></app-north-chart>
+          } @else {
+            <div class="chart" role="img" [attr.aria-label]="summary(v.chart, t('rasi_chart'))">
+              @for (c of v.chart; track c.rasiId) {
                 <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
                   <span class="rasi">{{ c.rasi }}</span>
                   <span class="items">
@@ -48,8 +37,30 @@ import { moonLongitude, vimshottari } from './vimshottari';
                   </span>
                 </div>
               }
-              <div class="center-cell" aria-hidden="true"><b>{{ t('navamsa') }}</b><span>D9</span></div>
+              <div class="center-cell" aria-hidden="true"><b>{{ t('rasi') }}</b><span>{{ name() }}</span></div>
             </div>
+          }
+        </div>
+        <div>
+          <h4>{{ t('navamsa_chart') }}</h4>
+          @if (navamsa(); as nav) {
+            @if (cs.style() === 'north') {
+              <app-north-chart [cells]="nav" [label]="summary(nav, t('navamsa_chart'))" [retro]="t('retro')"></app-north-chart>
+            } @else {
+              <div class="chart" role="img" [attr.aria-label]="summary(nav, t('navamsa_chart'))">
+                @for (c of nav; track c.rasiId) {
+                  <div class="cell" aria-hidden="true" [class.lagna]="c.isLagna" [style.grid-row]="c.row" [style.grid-column]="c.col">
+                    <span class="rasi">{{ c.rasi }}</span>
+                    <span class="items">
+                      @for (it of c.items; track $index) {
+                        <span [class.asc]="it.asc">{{ it.text }}{{ it.retro ? t('retro') : '' }}</span>
+                      }
+                    </span>
+                  </div>
+                }
+                <div class="center-cell" aria-hidden="true"><b>{{ t('navamsa') }}</b><span>D9</span></div>
+              </div>
+            }
           } @else {
             <p class="muted">{{ t('navamsa_not_ready') }}</p>
           }
@@ -93,6 +104,7 @@ import { moonLongitude, vimshottari } from './vimshottari';
   },
 })
 export class PersonChartsComponent {
+  readonly cs = inject(ChartStyleService);
   private i18n = inject(I18nService);
   readonly t = this.i18n.t;
 

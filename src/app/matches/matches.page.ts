@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonBackButton,
-  IonButton,
+  IonMenuButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -28,7 +28,7 @@ import { PbService } from '../services/pb.service';
     IonTitle,
     IonButtons,
     IonBackButton,
-    IonButton,
+    IonMenuButton,
     IonContent,
     IonList,
     IonItem,

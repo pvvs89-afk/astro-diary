@@ -1,0 +1,325 @@
+// Chat themes (customer app). The page gets a class theme-clean / theme-lavender /
+// theme-saffron / theme-dark; everything below reads these colour variables.
+:host(.theme-clean) {
+  --head-bg: #ffffff;
+  --head-ink: #2c2c2a;
+  --head-muted: #6f6e68;
+  --head-line: #e2e0d8;
+  --avatar-bg: #e6f1fb;
+  --avatar-ink: #185fa5;
+  --calla-bg: #e6f1fb;
+  --calla-ink: #185fa5;
+  --callv-bg: #e6f1fb;
+  --callv-ink: #185fa5;
+  --call-border: transparent;
+  --call-hover: #cfe3f7;
+  --call-radius: 50%;
+  --canvas: #f4f3ef;
+  --sys-bg: #ffffff;
+  --sys-ink: #6f6e68;
+  --line: #e2e0d8;
+  --in-bg: #ffffff;
+  --in-ink: #2c2c2a;
+  --in-border: #e2e0d8;
+  --out-bg: #185fa5;
+  --out-ink: #ffffff;
+  --meta: #6f6e68;
+  --meta-out: rgba(255,255,255,0.78);
+  --seen: #9fe1cb;
+  --r-in: 16px 16px 16px 4px;
+  --r-out: 16px 16px 4px 16px;
+  --day-bg: #e9e7e0;
+  --day-ink: #6f6e68;
+  --foot-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #c9c7bd;
+  --input-ink: #2c2c2a;
+  --icon: #5f5e5a;
+  --accent: #185fa5;
+  --accent-ink: #ffffff;
+  --accent-hover: #0c447c;
+  --soft: #e6f1fb;
+  --soft-ink: #0c447c;
+  --online: #0f6e56;
+  --link: #185fa5;
+  --dots: #888780;
+}
+
+:host(.theme-lavender) {
+  --head-bg: #534ab7;
+  --head-ink: #ffffff;
+  --head-muted: #cecbf6;
+  --head-line: #534ab7;
+  --avatar-bg: #eeedfe;
+  --avatar-ink: #3c3489;
+  --calla-bg: #1d9e75;
+  --calla-ink: #ffffff;
+  --callv-bg: #ffffff;
+  --callv-ink: #534ab7;
+  --call-border: transparent;
+  --call-hover: #e1f5ee;
+  --call-radius: 10px;
+  --canvas: #eeedfe;
+  --sys-bg: #ffffff;
+  --sys-ink: #534ab7;
+  --line: #cecbf6;
+  --in-bg: #ffffff;
+  --in-ink: #26215c;
+  --in-border: #cecbf6;
+  --out-bg: #7f77dd;
+  --out-ink: #ffffff;
+  --meta: #7f77dd;
+  --meta-out: rgba(255,255,255,0.82);
+  --seen: #ffffff;
+  --r-in: 12px;
+  --r-out: 12px;
+  --day-bg: #ffffff;
+  --day-ink: #534ab7;
+  --foot-bg: #ffffff;
+  --input-bg: #eeedfe;
+  --input-border: #eeedfe;
+  --input-ink: #26215c;
+  --icon: #534ab7;
+  --accent: #534ab7;
+  --accent-ink: #ffffff;
+  --accent-hover: #3c3489;
+  --soft: #eeedfe;
+  --soft-ink: #3c3489;
+  --online: #9fe1cb;
+  --link: #534ab7;
+  --dots: #7f77dd;
+}
+
+:host(.theme-saffron) {
+  --head-bg: #faeeda;
+  --head-ink: #412402;
+  --head-muted: #854f0b;
+  --head-line: #fac775;
+  --avatar-bg: #993c1d;
+  --avatar-ink: #faece7;
+  --calla-bg: transparent;
+  --calla-ink: #993c1d;
+  --callv-bg: transparent;
+  --callv-ink: #993c1d;
+  --call-border: #993c1d;
+  --call-hover: #fae0c8;
+  --call-radius: 50%;
+  --canvas: #fffbf3;
+  --sys-bg: #faeeda;
+  --sys-ink: #854f0b;
+  --line: #fac775;
+  --in-bg: #faeeda;
+  --in-ink: #412402;
+  --in-border: #fac775;
+  --out-bg: #993c1d;
+  --out-ink: #ffffff;
+  --meta: #854f0b;
+  --meta-out: rgba(255,255,255,0.8);
+  --seen: #fac775;
+  --r-in: 4px 14px 14px 14px;
+  --r-out: 14px 4px 14px 14px;
+  --day-bg: #faeeda;
+  --day-ink: #854f0b;
+  --foot-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #fac775;
+  --input-ink: #412402;
+  --icon: #993c1d;
+  --accent: #993c1d;
+  --accent-ink: #ffffff;
+  --accent-hover: #712b13;
+  --soft: #faeeda;
+  --soft-ink: #712b13;
+  --online: #3b6d11;
+  --link: #993c1d;
+  --dots: #ba7517;
+}
+
+:host(.theme-dark) {
+  --head-bg: #1f2023;
+  --head-ink: #f1efe8;
+  --head-muted: #a3a198;
+  --head-line: #2e3034;
+  --avatar-bg: #0c447c;
+  --avatar-ink: #b5d4f4;
+  --calla-bg: #0c447c;
+  --calla-ink: #b5d4f4;
+  --callv-bg: #0c447c;
+  --callv-ink: #b5d4f4;
+  --call-border: transparent;
+  --call-hover: #185fa5;
+  --call-radius: 50%;
+  --canvas: #141517;
+  --sys-bg: #1f2023;
+  --sys-ink: #a3a198;
+  --line: #2e3034;
+  --in-bg: #26282c;
+  --in-ink: #e8e6df;
+  --in-border: #2e3034;
+  --out-bg: #185fa5;
+  --out-ink: #ffffff;
+  --meta: #8d8b84;
+  --meta-out: rgba(255,255,255,0.75);
+  --seen: #9fe1cb;
+  --r-in: 16px 16px 16px 4px;
+  --r-out: 16px 16px 4px 16px;
+  --day-bg: #26282c;
+  --day-ink: #a3a198;
+  --foot-bg: #1a1b1e;
+  --input-bg: #26282c;
+  --input-border: #34363b;
+  --input-ink: #f1efe8;
+  --icon: #b4b2a9;
+  --accent: #378add;
+  --accent-ink: #ffffff;
+  --accent-hover: #185fa5;
+  --soft: #0c447c;
+  --soft-ink: #b5d4f4;
+  --online: #5dcaa5;
+  --link: #85b7eb;
+  --dots: #a3a198;
+}
+
+// ---------- Header ----------
+.chat-toolbar {
+  --background: var(--head-bg);
+  --color: var(--head-ink);
+  --border-color: var(--head-line);
+  --border-width: 0 0 1px 0;
+  --border-style: solid;
+}
+.chat-toolbar ion-back-button,
+.chat-toolbar ion-menu-button { --color: var(--head-ink); }
+.contact { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.c-avatar {
+  position: relative; width: 40px; height: 40px; border-radius: 50%; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--avatar-bg); color: var(--avatar-ink); font-size: 22px;
+}
+.c-dot { position: absolute; right: 0; bottom: 0; width: 11px; height: 11px; border-radius: 50%; background: #1d9e75; border: 2px solid var(--head-bg); }
+.c-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.c-text b { font-size: 16px; font-weight: 600; color: var(--head-ink); overflow: hidden; text-overflow: ellipsis; }
+.c-text small { font-size: 12.5px; font-weight: 400; color: var(--head-muted); overflow: hidden; text-overflow: ellipsis; }
+.c-text small.on { color: var(--online); }
+.typing-text { font-style: normal; color: var(--online); font-weight: 600; }
+
+// Call buttons (shape and colours come from the theme)
+.tb-call {
+  --border-radius: var(--call-radius);
+  --padding-start: 0; --padding-end: 0;
+  width: 40px; height: 40px; margin: 0 4px;
+  border-radius: var(--call-radius);
+  box-shadow: inset 0 0 0 1.5px var(--call-border);
+}
+.tb-call.audio { --background: var(--calla-bg); --background-hover: var(--call-hover); --color: var(--calla-ink); }
+.tb-call.video { --background: var(--callv-bg); --background-hover: var(--call-hover); --color: var(--callv-ink); }
+.tb-call.audio ion-icon { color: var(--calla-ink); }
+.tb-call.video ion-icon { color: var(--callv-ink); }
+.tb-call ion-icon { font-size: 20px; }
+.tb-call[disabled] { opacity: 0.45; }
+.tb-plain { --color: var(--head-muted); }
+.tb-plain ion-icon { color: var(--head-muted); }
+
+// ---------- Chat area ----------
+.chat-bg { --background: var(--canvas); }
+.chat-wrap { max-width: 760px; margin: 0 auto; padding: 12px 12px 18px; }
+.sys {
+  max-width: 90%; margin: 6px auto; padding: 7px 14px; border-radius: 10px; text-align: center;
+  background: var(--sys-bg); color: var(--sys-ink); font-size: 12.5px; border: 1px solid var(--line);
+}
+.sys.warn { background: #fff6e8; border-color: #f3d9a8; color: #854f0b; }
+
+.chat { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.day { text-align: center; margin: 12px 0 6px; }
+.day span { display: inline-block; padding: 3px 12px; border-radius: 12px; background: var(--day-bg); color: var(--day-ink); font-size: 12px; }
+.call-log { text-align: center; margin: 4px 0; }
+.call-log span {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 6px; border-radius: 18px;
+  background: var(--in-bg); color: var(--in-ink); font-size: 13px; border: 1px solid var(--line);
+}
+.call-log ion-icon {
+  width: 24px; height: 24px; padding: 5px; box-sizing: border-box; border-radius: 50%;
+  background: var(--soft); color: var(--soft-ink); font-size: 14px;
+}
+
+// ---------- Bubbles ----------
+.row { display: flex; align-items: flex-end; gap: 6px; justify-content: flex-start; }
+.row.me { justify-content: flex-end; }
+.bubble {
+  max-width: min(78%, 520px); padding: 8px 12px 6px; border-radius: var(--r-in);
+  background: var(--in-bg); color: var(--in-ink); display: flex; flex-direction: column; gap: 6px;
+  border: 1px solid var(--in-border);
+}
+.row.me .bubble { background: var(--out-bg); color: var(--out-ink); border-color: var(--out-bg); border-radius: var(--r-out); }
+.note { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.4; }
+.meta { align-self: flex-end; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--meta); }
+.row.me .meta { color: var(--meta-out); }
+.meta ion-icon { font-size: 15px; }
+.meta ion-icon.seen { color: var(--seen); }
+.photo img { display: block; max-width: 240px; max-height: 260px; border-radius: 10px; object-fit: cover; }
+.bubble video { max-width: 260px; border-radius: 10px; }
+.bubble audio { max-width: 250px; height: 40px; }
+.loc { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: var(--link); }
+.row.me .loc { color: var(--out-ink); text-decoration: underline; }
+.del {
+  border: 0; background: transparent; color: var(--meta); width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  font-size: 15px; display: inline-flex; align-items: center; justify-content: center; opacity: 0.8;
+}
+.del:hover, .del:focus-visible { color: #e24b4a; opacity: 1; }
+.bubble.typing { flex-direction: row; gap: 5px; padding: 12px 15px; }
+.bubble.typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--dots); animation: blink 1.2s infinite; }
+.bubble.typing span:nth-child(2) { animation-delay: 0.2s; }
+.bubble.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+// ---------- Composer ----------
+.chat-footer { background: var(--foot-bg); border-top: 1px solid var(--line); }
+.composer { max-width: 760px; margin: 0 auto; padding: 8px 10px calc(10px + var(--ion-safe-area-bottom, 0px)); }
+.bar { display: flex; align-items: flex-end; gap: 8px; }
+.pill {
+  flex: 1; display: flex; align-items: flex-end; gap: 2px; background: var(--input-bg); border-radius: 22px;
+  padding: 4px 6px; min-width: 0; border: 1px solid var(--input-border);
+}
+.pill:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.ib {
+  position: relative; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent;
+  display: inline-flex; align-items: center; justify-content: center; color: var(--icon); font-size: 21px; cursor: pointer;
+}
+.ib input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ib:hover { background: var(--soft); }
+.ib.on { color: var(--soft-ink); background: var(--soft); }
+.ib:focus-within, .ib:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.field {
+  flex: 1; min-width: 0; border: 0; outline: none; resize: none; font: inherit; font-size: 15px; line-height: 20px;
+  padding: 8px 6px; max-height: 120px; background: transparent; color: var(--input-ink);
+}
+.field::placeholder { color: var(--meta); }
+.round {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; font-size: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.round.send { color: var(--accent-ink); background: var(--accent); }
+.round.send:hover:not(:disabled) { background: var(--accent-hover); }
+.round.mic { color: var(--soft-ink); background: var(--soft); }
+.round.mic.rec { color: #ffffff; background: #e24b4a; animation: pulse 1.2s infinite; }
+.round:disabled { opacity: 0.45; cursor: default; }
+.round:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.round ion-spinner { color: var(--accent-ink); width: 20px; height: 20px; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(226, 75, 74, 0.18); } }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0 0 6px; padding: 4px 12px; border-radius: 14px;
+  background: var(--soft); color: var(--soft-ink); font-size: 13px;
+}
+.chip.rec { background: #fcebeb; color: #a32d2d; }
+.rec-dot { width: 9px; height: 9px; border-radius: 50%; background: #e24b4a; animation: pulse 1.2s infinite; }
+.pending { list-style: none; padding: 0; margin: 0 0 6px; display: flex; gap: 8px; flex-wrap: wrap; }
+.pending li { position: relative; }
+.pending img, .pending video { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; display: block; border: 1px solid var(--line); }
+.pending audio { width: 220px; }
+.x {
+  position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%;
+  border: 0; background: #e24b4a; color: #fff; font-size: 11px; cursor: pointer;
+}
+.error { color: #e24b4a; margin: 0 0 6px; font-size: 13px; }
+.center { display: flex; justify-content: center; padding: 40px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

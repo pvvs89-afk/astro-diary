@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [attr.aria-label]="t('back')" defaultHref="/kundli"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{ tx().prof_title }}</ion-title>
+    <ion-buttons slot="end"><app-lang-button></app-lang-button></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="wrap center-col">
+    @if (photo()) {
+      <img class="avatar-big" [src]="photo()" [alt]="tx().prof_title" />
+    } @else {
+      <div class="avatar-big avatar-empty" aria-hidden="true">👤</div>
+    }
+    <h2>{{ name() }}</h2>
+    <p class="muted">{{ email() }}</p>
+
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    @if (done()) { <p role="status">✅ {{ done() }}</p> }
+
+    @if (busy()) {
+      <ion-spinner name="crescent" role="status" [attr.aria-label]="t('loading')"></ion-spinner>
+    } @else {
+      <label class="tool big">
+        📷 {{ photo() ? tx().prof_change : tx().prof_add }}
+        <input type="file" accept="image/*" (change)="pick($event)" />
+      </label>
+    }
+    @if (photo()) {
+      <ion-button fill="clear" color="danger" [disabled]="busy()" (click)="remove()">{{ tx().prof_remove }}</ion-button>
+    }
+    <p class="muted small">{{ tx().prof_note }}</p>
+
+    <section class="theme-box" aria-labelledby="app-theme-h">
+      <b id="app-theme-h">{{ tx().prof_app_theme }}</b>
+      <small class="muted">{{ tx().prof_app_theme_note }}</small>
+      <div class="themes" role="radiogroup" aria-labelledby="app-theme-h">
+        @for (th of appThemes; track th.id) {
+          <button type="button" role="radio" class="theme" [class.sel]="appTheme.theme() === th.id" [attr.aria-checked]="appTheme.theme() === th.id"
+                  [disabled]="busy()" (click)="setAppTheme(th.id)">
+            <span class="sw" aria-hidden="true">
+              <i [style.background]="th.swatch[0]"></i><i [style.background]="th.swatch[1]"></i><i [style.background]="th.swatch[2]"></i>
+            </span>
+            <span>{{ appThemeName(th.id) }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="theme-box" aria-labelledby="theme-h">
+      <b id="theme-h">{{ tx().prof_theme }}</b>
+      <small class="muted">{{ tx().prof_theme_note }}</small>
+      <div class="themes" role="radiogroup" aria-labelledby="theme-h">
+        @for (th of themes; track th.id) {
+          <button type="button" role="radio" class="theme" [class.sel]="comm.chatTheme() === th.id" [attr.aria-checked]="comm.chatTheme() === th.id"
+                  [disabled]="busy()" (click)="setTheme(th.id)">
+            <span class="sw" aria-hidden="true">
+              <i [style.background]="th.swatch[0]"></i><i [style.background]="th.swatch[1]"></i><i [style.background]="th.swatch[2]"></i>
+            </span>
+            <span>{{ themeName(th.id) }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <div class="switch-row">
+      <div>
+        <b id="show-online-label">{{ tx().prof_show_online }}</b><br />
+        <small class="muted">{{ tx().prof_show_online_note }}</small>
+      </div>
+      <ion-toggle aria-labelledby="show-online-label" [checked]="!hideOnline()" [disabled]="busy()" (ionChange)="setShowOnline($any($event).detail.checked)"></ion-toggle>
+    </div>
+  </div>
+</ion-content>

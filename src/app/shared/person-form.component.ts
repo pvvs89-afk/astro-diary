@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonInput, IonItem, IonLabel, IonList, IonSpinner } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -122,13 +122,17 @@ import { PbService, PersonBirth, Place } from '../services/pb.service';
   `,
   styleUrls: ['./person-form.component.scss'],
 })
-export class PersonFormComponent {
+export class PersonFormComponent implements OnInit {
   private pbs = inject(PbService);
   private i18n = inject(I18nService);
   readonly t = this.i18n.t;
 
   /** Heading, e.g. "Boy's details". */
   readonly title = input('');
+  /** Start with today's date and the current time (match making). */
+  readonly prefillNow = input(false);
+  /** Start with the device's current location as the place (match making). */
+  readonly prefillLocation = input(false);
 
   name = '';
   readonly years = Array.from({ length: new Date().getFullYear() - 1900 }, (_, i) =>
@@ -155,6 +159,30 @@ export class PersonFormComponent {
 
   constructor() {
     addIcons({ searchOutline, locationOutline, checkmarkCircle });
+  }
+
+  ngOnInit(): void {
+    if (this.prefillNow()) this.setNow();
+    if (this.prefillLocation()) {
+      // Asks the phone / browser for the location once (shared by both forms);
+      // if the customer says no, the place simply stays empty.
+      void this.pbs.currentPlace().then((p) => {
+        if (p && !this.selectedPlace() && !this.placeQuery.trim()) this.choosePlace(p);
+      });
+    }
+  }
+
+  /** Today's date and the current time from this device. */
+  setNow(): void {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    this.year = String(d.getFullYear());
+    this.month = pad(d.getMonth() + 1);
+    this.day = pad(d.getDate());
+    const h = d.getHours();
+    this.hour = pad(h % 12 === 0 ? 12 : h % 12);
+    this.minute = pad(d.getMinutes());
+    this.ampm = h < 12 ? 'AM' : 'PM';
   }
 
   /** YYYY-MM-DD, or '' if incomplete / not a real date. */

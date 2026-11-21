@@ -2,6 +2,7 @@
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button [attr.aria-label]="t('back')" defaultHref="/home"></ion-back-button>
+      <ion-menu-button [attr.aria-label]="t('menu')"></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ t('match_making') }}</ion-title>
     <ion-buttons slot="end">
@@ -34,7 +35,7 @@
 
     <!-- Boy -->
     <section class="person">
-      <app-person-form #boyForm [title]="t('boy_details')"></app-person-form>
+      <app-person-form #boyForm [title]="t('boy_details')" [prefillNow]="true" [prefillLocation]="true"></app-person-form>
       @if (mine()) {
         <ion-button fill="clear" size="small" (click)="useMine(boyForm)">↺ {{ mineLabel() }}</ion-button>
       }
@@ -42,7 +43,7 @@
 
     <!-- Girl -->
     <section class="person">
-      <app-person-form #girlForm [title]="t('girl_details')"></app-person-form>
+      <app-person-form #girlForm [title]="t('girl_details')" [prefillNow]="true" [prefillLocation]="true"></app-person-form>
       @if (mine()) {
         <ion-button fill="clear" size="small" (click)="useMine(girlForm)">↺ {{ mineLabel() }}</ion-button>
       }
