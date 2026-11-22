@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonBackButton,
   IonButtons,
@@ -13,18 +13,22 @@ import {
 import { RecordModel } from 'pocketbase';
 import { I18nService } from '../i18n/i18n.service';
 import { LangButtonComponent } from '../i18n/lang-button.component';
-import { CommService, MAX_MY_ASTROLOGERS, astroStatus } from '../services/comm.service';
+import { CommService, astroStatus } from '../services/comm.service';
 import { COMM_TEXT, fill } from './comm-text';
+import { CallService } from '../call/call.service';
+import { ASTRO_LANG_NAMES, SKILL_IDS, SKILL_NAMES, START_TEXT, fillText } from '../start/start-text';
+import { addIcons } from 'ionicons';
+import { call, chatbubbles, heart, heartOutline, star, videocam } from 'ionicons/icons';
+import { IonIcon } from '@ionic/angular';
 
 /**
- * All astrologers: every astrologer, with photo, about and online status. The customer
- * adds up to 5 of them to their chats (Message Astrologer); the chief astrologer is
- * always there and doesn't count.
+ * All astrologers: every astrologer with photo, status, rating, price, specialities and
+ * languages. Customers can chat with or call anyone; ♡ keeps favourites in their chats.
  */
 @Component({
   selector: 'app-astrologers',
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonMenuButton, IonContent, IonSpinner, LangButtonComponent],
+  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonMenuButton, IonContent, IonSpinner, IonIcon, LangButtonComponent],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -38,16 +42,22 @@ import { COMM_TEXT, fill } from './comm-text';
     </ion-header>
     <ion-content class="ion-padding">
       <div class="wrap">
-        <p class="muted intro">{{ fill(tx().dir_intro, { max: max }) }}</p>
+        <p class="muted intro">{{ st().fav_intro }}</p>
         <div class="tools">
-          <span class="count" [class.full]="full()" role="status">{{ fill(tx().dir_count, { n: comm.myAddedCount(), max: max }) }}</span>
           <input type="search" class="search" [placeholder]="tx().astro_search" [attr.aria-label]="tx().astro_search"
                  [value]="search()" (input)="search.set($any($event.target).value)" />
           <button type="button" class="only" [class.on]="onlineOnly()" [attr.aria-pressed]="onlineOnly()" (click)="onlineOnly.set(!onlineOnly())">
             <span class="g" aria-hidden="true"></span>{{ tx().astro_online_only }}
           </button>
+          <select class="sel" [value]="skill()" (change)="skill.set($any($event.target).value)" [attr.aria-label]="st().skills">
+            <option value="">{{ st().all_skills }}</option>
+            @for (k of skillIds; track k) { <option [value]="k" [selected]="k === skill()">{{ skillName(k) }}</option> }
+          </select>
+          <select class="sel" [value]="lang()" (change)="lang.set($any($event.target).value)" [attr.aria-label]="st().langs">
+            <option value="">{{ st().all_langs }}</option>
+            @for (l of langIds; track l) { <option [value]="l" [selected]="l === lang()">{{ langNames[l] }}</option> }
+          </select>
         </div>
-        @if (full()) { <p class="note-full" role="note">{{ fill(tx().dir_full, { max: max }) }}</p> }
         @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
 
         @if (loading()) {
@@ -56,7 +66,7 @@ import { COMM_TEXT, fill } from './comm-text';
           <ul class="grid">
             @for (a of shown(); track a.id) {
               <li class="card" [class.mine]="a['mine']">
-                <div class="top">
+                <a class="top" [routerLink]="['/astrologer', a.id]" [attr.aria-label]="st().profile + ': ' + a['name']">
                   <span class="av-wrap">
                     @if (comm.astroPhoto(a, '300x300')) { <img class="av" [src]="comm.astroPhoto(a, '300x300')" alt="" /> }
                     @else { <span class="av av-empty" aria-hidden="true">{{ (a['name'] || '?').slice(0, 1) }}</span> }
@@ -66,20 +76,33 @@ import { COMM_TEXT, fill } from './comm-text';
                     <b>{{ a['name'] }}</b>
                     @if (a['role'] === 'super') { <small class="chief">{{ tx().astro_chief }}</small> }
                     <small class="state" [class.on]="online(a)">{{ online(a) ? tx().st_online : tx().st_offline }}</small>
+                    <span class="badges">
+                      @if (a['reviews']) { <span class="stars"><ion-icon name="star" aria-hidden="true"></ion-icon> {{ a['rating'] }} <small>({{ a['reviews'] }})</small></span> }
+                      @if (a['rate']) { <span class="price">{{ fillText(st().per_min, { n: a['rate'] }) }}</span> }
+                    </span>
                   </span>
-                </div>
+                </a>
+                @if (a['role'] !== 'super') {
+                  <button type="button" class="fav" [class.on]="a['mine']" [disabled]="busy() === a.id" (click)="toggle(a, !a['mine'])"
+                          [attr.aria-pressed]="!!a['mine']" [attr.aria-label]="(a['mine'] ? st().fav_remove : st().fav_add) + ': ' + a['name']"
+                          [title]="a['mine'] ? st().fav_remove : st().fav_add">
+                    <ion-icon [name]="a['mine'] ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
+                  </button>
+                }
+                @if (skillsOf(a)) { <p class="meta">🔮 {{ skillsOf(a) }}</p> }
+                @if (langsOf(a) || a['experience']) {
+                  <p class="meta">
+                    @if (langsOf(a)) { 🗣️ {{ langsOf(a) }} }
+                    @if (langsOf(a) && a['experience']) { · }
+                    @if (a['experience']) { {{ fillText(st().exp, { n: a['experience'] }) }} }
+                  </p>
+                }
                 @if (a['bio']) { <p class="bio">{{ a['bio'] }}</p> }
                 <div class="actions">
-                  @if (a['mine']) {
-                    <button type="button" class="btn primary" (click)="chat(a)">{{ tx().dir_chat }}</button>
-                    @if (a['role'] !== 'super') {
-                      <button type="button" class="btn ghost" [disabled]="busy() === a.id" (click)="toggle(a, false)">{{ tx().dir_remove }}</button>
-                    }
-                  } @else {
-                    <button type="button" class="btn add" [disabled]="full() || busy() === a.id" (click)="toggle(a, true)">
-                      @if (busy() === a.id) { <ion-spinner name="crescent"></ion-spinner> } @else { + {{ tx().dir_add }} }
-                    </button>
-                  }
+                  <button type="button" class="btn primary" (click)="chat(a)"><ion-icon name="chatbubbles" aria-hidden="true"></ion-icon> {{ tx().dir_chat }}</button>
+                  <button type="button" class="btn callb" (click)="callNow(a)" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="st().call + ' ' + a['name']" [title]="st().call">
+                    <ion-icon name="call" aria-hidden="true"></ion-icon>
+                  </button>
                 </div>
               </li>
             } @empty {
@@ -118,6 +141,22 @@ import { COMM_TEXT, fill } from './comm-text';
       .state.on { color: #1a8a47; font-weight: 600; }
       .bio { margin: 0; font-size: 14px; color: var(--ion-color-medium-shade); }
       .actions { display: flex; gap: 8px; margin-top: auto; }
+      a.top { text-decoration: none; color: inherit; }
+      .meta { margin: 0; font-size: 13px; color: var(--ion-color-medium-shade); }
+      .card { position: relative; }
+      .badges { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 2px; }
+      .stars { display: inline-flex; align-items: center; gap: 3px; font-weight: 700; font-size: 13px; color: #b7791f; }
+      .stars small { color: var(--ion-color-medium); font-weight: 400; }
+      .price { font-weight: 700; font-size: 13px; color: var(--ion-color-primary); }
+      .fav { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer;
+        background: var(--ion-background-color, #fff); color: var(--ion-color-medium); font-size: 20px; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); }
+      .fav.on { color: #e24b4a; }
+      .fav:disabled { opacity: 0.6; }
+      .sel { height: 36px; padding: 0 10px; border-radius: 18px; border: 1px solid var(--ion-color-step-200, #ccc); background: var(--ion-background-color); color: var(--ion-text-color); font: inherit; font-size: 13px; }
+      .btn ion-icon { font-size: 17px; margin-right: 4px; }
+      .btn.callb { flex: 0 0 auto; width: 38px; padding: 0; border-radius: 50%; background: #1fa855; color: #fff; }
+      .btn.callb ion-icon { margin: 0; }
       .btn { flex: 1; height: 38px; border-radius: 19px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; }
       .btn.primary { background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); }
       .btn.add { background: transparent; color: var(--ion-color-primary); border-color: var(--ion-color-primary); }
@@ -130,19 +169,29 @@ import { COMM_TEXT, fill } from './comm-text';
   ],
 })
 export class AstrologersPage implements OnInit {
+  constructor() {
+    addIcons({ call, chatbubbles, heart, heartOutline, star, videocam });
+  }
+
   readonly comm = inject(CommService);
   private i18n = inject(I18nService);
   private router = inject(Router);
   readonly t = this.i18n.t;
   readonly tx = computed(() => COMM_TEXT[this.i18n.lang()]);
   readonly fill = fill;
-  readonly max = MAX_MY_ASTROLOGERS;
   readonly loading = signal(true);
   readonly busy = signal('');
   readonly error = signal('');
   readonly search = signal('');
   readonly onlineOnly = signal(false);
-  readonly full = computed(() => this.comm.myAddedCount() >= this.max);
+  readonly skill = signal('');
+  readonly lang = signal('');
+  readonly calls = inject(CallService);
+  readonly st = computed(() => START_TEXT[this.i18n.lang()]);
+  readonly skillIds = SKILL_IDS;
+  readonly langIds = Object.keys(ASTRO_LANG_NAMES);
+  readonly langNames = ASTRO_LANG_NAMES;
+  readonly fillText = fillText;
 
   /** Chief astrologer first, then the customer's own, then online ones, then by name. */
   readonly shown = computed(() => {
@@ -150,10 +199,13 @@ export class AstrologersPage implements OnInit {
     const only = this.onlineOnly();
     return [...this.comm.astrologers()]
       .filter((a) => (!q || `${a['name'] ?? ''} ${a['bio'] ?? ''}`.toLowerCase().includes(q)) && (!only || this.online(a)))
+      .filter((a) => !this.skill() || ((a['skills'] as string[] | undefined) ?? []).includes(this.skill()))
+      .filter((a) => !this.lang() || ((a['languages'] as string[] | undefined) ?? []).includes(this.lang()))
       .sort(
         (a, b) =>
           Number(b['role'] === 'super') - Number(a['role'] === 'super') ||
           Number(!!b['mine']) - Number(!!a['mine']) ||
+          Number(b['rating'] || 0) - Number(a['rating'] || 0) ||
           Number(this.online(b)) - Number(this.online(a)) ||
           String(a['name'] ?? '').localeCompare(String(b['name'] ?? '')),
       );
@@ -179,6 +231,22 @@ export class AstrologersPage implements OnInit {
     } finally {
       this.busy.set('');
     }
+  }
+
+  skillName(k: string): string {
+    return SKILL_NAMES[this.i18n.lang()][k] ?? k;
+  }
+
+  skillsOf(a: RecordModel): string {
+    return ((a['skills'] as string[] | undefined) ?? []).map((k) => this.skillName(k)).join(', ');
+  }
+
+  langsOf(a: RecordModel): string {
+    return ((a['languages'] as string[] | undefined) ?? []).map((l) => ASTRO_LANG_NAMES[l] ?? l).join(', ');
+  }
+
+  callNow(a: RecordModel): void {
+    void this.calls.call('audio', a.id);
   }
 
   chat(a: RecordModel): void {

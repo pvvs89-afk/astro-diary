@@ -86,3 +86,42 @@
 .me-switch button.on { background: var(--ion-color-primary); color: #fff; }
 .sdot { width: 9px; height: 9px; border-radius: 50%; background: #9aa0a6; display: inline-block; }
 .sdot.green { background: #1fa855; }
+
+// ---------- Bottom tab bar (customer) ----------
+$tab-h: 62px;
+ion-router-outlet.with-tabs {
+  position: absolute; top: 0; left: 0; right: 0;
+  bottom: calc(#{$tab-h} + var(--ion-safe-area-bottom, 0px));
+  height: auto;
+}
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  height: calc(#{$tab-h} + var(--ion-safe-area-bottom, 0px));
+  padding-bottom: var(--ion-safe-area-bottom, 0px);
+  display: flex; align-items: stretch; justify-content: space-around;
+  background: var(--ion-background-color, #fff);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+
+  a {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    text-decoration: none; color: var(--ion-color-medium); font-size: 11px; font-weight: 600;
+    ion-icon { font-size: 22px; }
+    &.on { color: var(--ion-color-primary); }
+    &:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: -4px; border-radius: 10px; }
+  }
+  .center-tab .bubble {
+    position: relative; width: 46px; height: 46px; margin-top: -18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ion-color-primary); color: var(--ion-color-primary-contrast);
+    box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.45);
+    ion-icon { font-size: 22px; }
+  }
+  .tb-badge {
+    position: absolute; top: -2px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+    background: #e24b4a; color: #fff; font-size: 10px; font-style: normal; font-weight: 700; line-height: 18px; text-align: center;
+    border: 2px solid var(--ion-background-color, #fff); box-sizing: content-box;
+  }
+}
+
+.wallet-amt { font-weight: 700; font-size: 13px; color: var(--ion-color-primary); }

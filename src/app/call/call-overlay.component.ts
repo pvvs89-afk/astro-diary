@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { call, cameraReverse, mic, micOff, person, videocam, videocamOff } from 'ionicons/icons';
@@ -17,12 +17,12 @@ import { CommService } from '../services/comm.service';
     @if (cs.state() !== 'idle') {
       <div class="call-screen" role="dialog" aria-modal="true" [attr.aria-label]="peer() + ': ' + status()">
         @if (cs.kind() === 'video') {
-          <video class="remote" autoplay playsinline [srcObject]="cs.remote()" [class.hidden]="!cs.remote()"></video>
+          <video #remoteVideo class="remote" autoplay playsinline [class.hidden]="!cs.remote()"></video>
           @if (cs.local()) {
             <video class="local" autoplay playsinline [muted]="true" [srcObject]="cs.local()" [class.off]="cs.camOff()"></video>
           }
         } @else {
-          <audio autoplay [srcObject]="cs.remote()"></audio>
+          <audio #remoteAudio autoplay playsinline></audio>
         }
 
         <div class="info" [class.small]="cs.kind() === 'video' && cs.state() === 'active'">
@@ -35,6 +35,9 @@ import { CommService } from '../services/comm.service';
           <p role="status" aria-live="polite">{{ status() }}</p>
         </div>
 
+        @if (blocked() && cs.state() !== 'ended') {
+          <button type="button" class="unmute" (click)="playRemote()">🔊 {{ tapToHear() }}</button>
+        }
         <div class="controls">
           @if (cs.state() === 'incoming') {
             <button type="button" class="round red" (click)="cs.decline()" [attr.aria-label]="tx().call_decline"><ion-icon name="call" class="hang" aria-hidden="true"></ion-icon><span>{{ tx().call_decline }}</span></button>
@@ -77,6 +80,8 @@ import { CommService } from '../services/comm.service';
       h2 { margin: 0 0 6px; font-size: 24px; }
       p { margin: 0; opacity: 0.9; font-size: 16px; }
       .controls { position: relative; z-index: 2; display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+      .unmute { position: relative; z-index: 3; align-self: center; margin-bottom: 14px; padding: 12px 22px; border-radius: 24px; border: 0;
+        background: #fff; color: #10183d; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
       .round {
         width: 66px; height: 66px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.14);
         color: #fff; font-size: 28px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -101,7 +106,22 @@ import { CommService } from '../services/comm.service';
   ],
 })
 export class CallOverlayComponent {
+  private remoteVideo = viewChild<ElementRef<HTMLVideoElement>>('remoteVideo');
+  private remoteAudio = viewChild<ElementRef<HTMLAudioElement>>('remoteAudio');
+  /** The phone / browser refused to start the other person's sound: show "Tap to hear". */
+  readonly blocked = signal(false);
+
   constructor() {
+    // Play the other person's voice / video ourselves (some phones and browsers don't
+    // start it automatically). Runs again when the stream or the call state changes.
+    effect(() => {
+      const stream = this.cs.remote();
+      this.cs.state();
+      this.cs.kind();
+      this.remoteVideo();
+      this.remoteAudio();
+      setTimeout(() => this.attach(stream), 0);
+    });
     addIcons({ call, cameraReverse, mic, micOff, person, videocam, videocamOff });
   }
 
@@ -137,4 +157,39 @@ export class CallOverlayComponent {
         return '';
     }
   });
+
+  /** "Tap to hear" in the app language. */
+  tapToHear(): string {
+    const t: Record<string, string> = {
+      en: 'Tap to hear', hi: 'सुनने के लिए दबाएँ', ta: 'கேட்க அழுத்துங்கள்', te: 'వినడానికి నొక్కండి', ml: 'കേൾക്കാൻ അമർത്തുക',
+    };
+    return t[this.i18n.lang()] ?? t['en'];
+  }
+
+  private mediaEl(): HTMLMediaElement | null {
+    return this.remoteVideo()?.nativeElement ?? this.remoteAudio()?.nativeElement ?? null;
+  }
+
+  private attach(stream: MediaStream | null): void {
+    const el = this.mediaEl();
+    if (!el) return;
+    if (el.srcObject !== stream) el.srcObject = stream;
+    if (!stream) {
+      this.blocked.set(false);
+      return;
+    }
+    el.muted = false;
+    this.playRemote();
+  }
+
+  /** Start the other person's sound / video (also from the "Tap to hear" button). */
+  playRemote(): void {
+    const el = this.mediaEl();
+    if (!el || !el.srcObject) return;
+    el.muted = false;
+    el.play().then(
+      () => this.blocked.set(false),
+      () => this.blocked.set(true),
+    );
+  }
 }

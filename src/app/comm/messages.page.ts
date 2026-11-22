@@ -117,7 +117,11 @@ export class MessagesPage implements OnInit, OnDestroy {
   });
   /** All astrologers: online first, then the chief astrologer, then by name. */
   readonly list = computed(() =>
-    [...this.comm.myAstrologers()].sort(
+    [
+      ...this.comm.myAstrologers(),
+      // An astrologer opened from All astrologers who isn't a favourite yet.
+      ...this.comm.astrologers().filter((a) => a.id === this.staffId() && !a['mine']),
+    ].sort(
       (a, b) =>
         Number(this.isOnline(b)) - Number(this.isOnline(a)) ||
         Number(b['role'] === 'super') - Number(a['role'] === 'super') ||

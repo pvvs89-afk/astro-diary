@@ -37,6 +37,14 @@
 
       <nav [attr.aria-label]="t('menu')">
         <ion-list lines="none" class="menu-list">
+          <!-- Home -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/main" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="home-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ st().tab_home }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
           <!-- 1. Kundli (opens / closes its sub-menu) -->
           <ion-item button [detail]="false" class="menu-main" (click)="kundliOpen.set(!kundliOpen())"
                     [attr.aria-expanded]="kundliOpen()" aria-controls="kundli-sub">
@@ -91,6 +99,26 @@
             </ion-item>
           </ion-menu-toggle>
 
+          <!-- Notifications from Astro Diary -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/notifications" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" [name]="notifUnread() ? 'notifications' : 'notifications-outline'" aria-hidden="true"></ion-icon>
+              <ion-label>{{ nt().n_menu }}</ion-label>
+              @if (notifUnread()) {
+                <span slot="end" class="badge" [attr.aria-label]="notifUnread() + ' new'">{{ notifUnread() }}</span>
+              }
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- Wallet (design preview until Razorpay is set up) -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/wallet" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="wallet-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ st().wallet }}</ion-label>
+              <span slot="end" class="wallet-amt">₹0</span>
+            </ion-item>
+          </ion-menu-toggle>
+
           <!-- 4. Subscription (plans page) -->
           <ion-menu-toggle [autoHide]="false">
             <ion-item button [detail]="false" class="menu-main" routerLink="/home" routerLinkActive="selected" ariaCurrentWhenActive="page">
@@ -120,7 +148,30 @@
     </ion-footer>
   </ion-menu>
 
-  <ion-router-outlet id="main"></ion-router-outlet>
+  <ion-router-outlet id="main" [class.with-tabs]="tabsOn()"></ion-router-outlet>
+
+  <!-- Bottom tabs (customer), hidden on login and inside a chat -->
+  @if (tabsOn()) {
+    <nav class="tabbar" [attr.aria-label]="t('menu')">
+      <a routerLink="/main" routerLinkActive="on" ariaCurrentWhenActive="page">
+        <ion-icon name="home-outline" aria-hidden="true"></ion-icon><span>{{ st().tab_home }}</span>
+      </a>
+      <a routerLink="/astrologers" routerLinkActive="on" ariaCurrentWhenActive="page">
+        <ion-icon name="people-outline" aria-hidden="true"></ion-icon><span>{{ st().tab_astro }}</span>
+      </a>
+      <a routerLink="/messages" routerLinkActive="on" class="center-tab">
+        <span class="bubble"><ion-icon name="chatbubbles" aria-hidden="true"></ion-icon>
+          @if (unread()) { <i class="tb-badge">{{ unread() }}</i> }</span>
+        <span>{{ st().tab_chat }}</span>
+      </a>
+      <a routerLink="/kundli" routerLinkActive="on" ariaCurrentWhenActive="page">
+        <ion-icon name="planet-outline" aria-hidden="true"></ion-icon><span>{{ st().tab_kundli }}</span>
+      </a>
+      <a routerLink="/profile" routerLinkActive="on" ariaCurrentWhenActive="page">
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon><span>{{ st().tab_profile }}</span>
+      </a>
+    </nav>
+  }
 
   <!-- Internet audio / video call window (over every page) -->
   <app-call-overlay></app-call-overlay>

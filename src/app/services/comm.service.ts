@@ -39,8 +39,13 @@ export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 /** Whole message (all attachments) - keeps uploads reasonable on mobile data. */
 export const MAX_MESSAGE_BYTES = 30 * 1024 * 1024;
 export const MAX_FILES = 5;
-/** Astrologers a customer can add to their chats (besides the chief astrologer). */
-export const MAX_MY_ASTROLOGERS = 5;
+/** Reviews of one astrologer (from the server). */
+export interface ReviewSummary {
+  rating: number;
+  count: number;
+  mine: { rating: number; comment: string } | null;
+  items: { rating: number; comment: string; name: string; created: string }[];
+}
 
 /**
  * Messages to the astrologer, shared locations and the profile photo.
@@ -59,7 +64,7 @@ export class CommService {
 
   /** Every astrologer shown to customers (the "All astrologers" page). */
   readonly astrologers = signal<RecordModel[]>([]);
-  /** The ones in this customer's chats: the chief astrologer + up to 5 they added. */
+  /** Favourites, shown in the customer's chats: the chief astrologer + the ones they added (no limit). */
   readonly myAstrologers = computed(() => this.astrologers().filter((a) => a['mine']));
   /** How many the customer added (the chief astrologer doesn't count). */
   readonly myAddedCount = computed(() => this.astrologers().filter((a) => a['mine'] && a['role'] !== 'super').length);
@@ -109,7 +114,22 @@ export class CommService {
     }
   }
 
-  /** Adds an astrologer to (or removes one from) this customer's chats. */
+  // ---------- Reviews ----------
+  reviews(staffId: string): Promise<ReviewSummary> {
+    return this.pb.send<ReviewSummary>('/api/astro/reviews/' + encodeURIComponent(staffId), { requestKey: null });
+  }
+
+  async saveReview(staffId: string, rating: number, comment: string): Promise<void> {
+    await this.pb.send('/api/astro/reviews', { method: 'POST', body: { staff: staffId, rating, comment }, requestKey: null });
+    await this.loadAstrologers();
+  }
+
+  async deleteReview(staffId: string): Promise<void> {
+    await this.pb.send('/api/astro/reviews/' + encodeURIComponent(staffId), { method: 'DELETE', requestKey: null });
+    await this.loadAstrologers();
+  }
+
+  /** Adds an astrologer to (or removes one from) this customer's favourites. */
   async setMine(staffId: string, add: boolean): Promise<void> {
     await this.pb.send('/api/astro/my-astrologers', { method: 'POST', body: { id: staffId, add }, requestKey: null });
     await this.loadAstrologers();

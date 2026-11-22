@@ -9,11 +9,11 @@ const authGuard: CanActivateFn = () => {
   return pbs.isLoggedIn ? true : router.parseUrl('/login');
 };
 
-/** App start: login -> home, where the customer picks My Kundli or Match Making. */
+/** App start: login -> Home (today's star, quick actions, astrologers online). */
 const startGuard: CanActivateFn = () => {
   const pbs = inject(PbService);
   const router = inject(Router);
-  return router.parseUrl(pbs.isLoggedIn ? '/home' : '/login');
+  return router.parseUrl(pbs.isLoggedIn ? '/main' : '/login');
 };
 
 export const routes: Routes = [
@@ -37,6 +37,26 @@ export const routes: Routes = [
     path: 'tarabalam',
     canActivate: [authGuard],
     loadComponent: () => import('./tarabalam/tarabalam.page').then((m) => m.TarabalamPage),
+  },
+  {
+    path: 'main',
+    canActivate: [authGuard],
+    loadComponent: () => import('./start/start.page').then((m) => m.StartPage),
+  },
+  {
+    path: 'wallet',
+    canActivate: [authGuard],
+    loadComponent: () => import('./start/wallet.page').then((m) => m.WalletPage),
+  },
+  {
+    path: 'astrologer/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/astrologer.page').then((m) => m.AstrologerPage),
+  },
+  {
+    path: 'notifications',
+    canActivate: [authGuard],
+    loadComponent: () => import('./notify/notifications.page').then((m) => m.NotificationsPage),
   },
   {
     path: 'astrologers',
