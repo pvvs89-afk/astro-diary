@@ -196,6 +196,7 @@
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--avatar-bg); color: var(--avatar-ink); font-size: 22px;
 }
+.c-photo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; }
 .c-dot { position: absolute; right: 0; bottom: 0; width: 11px; height: 11px; border-radius: 50%; background: #1d9e75; border: 2px solid var(--head-bg); }
 .c-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
 .c-text b { font-size: 16px; font-weight: 600; color: var(--head-ink); overflow: hidden; text-overflow: ellipsis; }

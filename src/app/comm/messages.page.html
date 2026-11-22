@@ -6,17 +6,18 @@
     </ion-buttons>
     <ion-title>
       <div class="contact">
-        <span class="c-avatar" aria-hidden="true"><ion-icon name="planet-outline"></ion-icon>
-          @if (comm.astroOnline()) { <span class="c-dot"></span> }
+        <span class="c-avatar" aria-hidden="true">
+          @if (comm.astroPhoto(astro())) { <img class="c-photo" [src]="comm.astroPhoto(astro())" alt="" /> } @else { <ion-icon name="planet-outline"></ion-icon> }
+          @if (status().online) { <span class="c-dot"></span> }
         </span>
         <span class="c-text">
-          <b>{{ tx().msg_astrologer }}</b>
-          <small role="status" aria-live="polite" [class.on]="comm.astroOnline() && !comm.astroTyping()">
-            @if (comm.astroTyping()) {
+          <b>{{ astroName() }}</b>
+          <small role="status" aria-live="polite" [class.on]="status().online && !typing()">
+            @if (typing()) {
               <i class="typing-text">{{ tx().st_typing }}</i>
-            } @else if (comm.astroOnline()) {
+            } @else if (status().online) {
               {{ tx().st_online }}
-            } @else if (comm.astroLastSeen(); as ls) {
+            } @else if (status().lastSeen; as ls) {
               {{ text('st_last_seen', { time: time(ls.toISOString()) }) }}
             } @else {
               {{ tx().st_offline }}
@@ -26,10 +27,10 @@
       </div>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button class="tb-call audio" (click)="calls.call('audio')" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_audio" [title]="tx().call_audio">
+      <ion-button class="tb-call audio" (click)="calls.call('audio', staffId())" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_audio" [title]="tx().call_audio">
         <ion-icon slot="icon-only" name="call"></ion-icon>
       </ion-button>
-      <ion-button class="tb-call video" (click)="calls.call('video')" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_video" [title]="tx().call_video">
+      <ion-button class="tb-call video" (click)="calls.call('video', staffId())" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_video" [title]="tx().call_video">
         <ion-icon slot="icon-only" name="videocam"></ion-icon>
       </ion-button>
       <ion-button class="tb-plain" (click)="pickTheme()" [attr.aria-label]="tx().prof_theme" [title]="tx().prof_theme">
@@ -43,10 +44,53 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="chat-bg">
+<ion-content class="chat-bg" [class.has-strip]="showSide()" [class.has-tools]="manyAstro()">
+  <!-- Astrologers: a column on the right (wide screens) or a row of photos on top (phones). -->
+  @if (showSide()) {
+    <nav slot="fixed" class="side" [attr.aria-label]="tx().astro_list_title">
+      <h2 class="side-title">{{ tx().astro_list_title }}</h2>
+      @if (manyAstro()) {
+        <div class="side-tools">
+          <input type="search" class="s-search" [placeholder]="tx().astro_search" [attr.aria-label]="tx().astro_search"
+                 [value]="search()" (input)="search.set($any($event.target).value)" />
+          <button type="button" class="s-only" [class.on]="onlineOnly()" [attr.aria-pressed]="onlineOnly()" (click)="onlineOnly.set(!onlineOnly())">
+            <span class="s-only-dot" aria-hidden="true"></span>{{ tx().astro_online_only }}
+          </button>
+        </div>
+      }
+      <ul class="side-list">
+        @for (a of shown(); track a.id) {
+          <li>
+            <button type="button" class="s-item" [class.sel]="a.id === staffId()" [attr.aria-current]="a.id === staffId() ? 'true' : null"
+                    (click)="select(a)" [title]="a['name']">
+              <span class="s-av">
+                @if (comm.astroPhoto(a)) { <img [src]="comm.astroPhoto(a)" alt="" /> } @else { <span class="s-ini" aria-hidden="true">{{ (a['name'] || '?').slice(0, 1) }}</span> }
+                @if (isOnline(a)) { <span class="s-dot" aria-hidden="true"></span> }
+                @if (unreadOf(a)) { <span class="s-badge">{{ unreadOf(a) }}</span> }
+              </span>
+              <span class="s-text">
+                <b>{{ a['name'] }}</b>
+                @if (a['role'] === 'super') { <small class="s-chief">{{ tx().astro_chief }}</small> }
+                <small class="s-state" [class.on]="isOnline(a)">
+                  @if (comm.typingStaff().has(a.id)) { {{ tx().st_typing }} } @else { {{ isOnline(a) ? tx().st_online : tx().st_offline }} }
+                </small>
+              </span>
+            </button>
+          </li>
+        }
+        @if (shown().length <= 1 && (search() || onlineOnly())) { <li class="s-none">{{ tx().astro_no_match }}</li> }
+        <li>
+          <a class="s-item s-add" routerLink="/astrologers" [title]="tx().astro_add_more">
+            <span class="s-av"><span class="s-ini s-plus" aria-hidden="true">+</span></span>
+            <span class="s-text"><b>{{ tx().astro_add_more }}</b></span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  }
   <div class="chat-wrap">
     <p class="sys">{{ tx().msg_intro }}</p>
-    @if (!comm.astroOnline()) { <p class="sys warn">{{ tx().call_offline_note }}</p> }
+    @if (!status().online) { <p class="sys warn">{{ tx().call_offline_note }}</p> }
 
     @if (loading()) {
       <div class="center" role="status"><ion-spinner name="crescent" aria-hidden="true"></ion-spinner><span class="sr-only">{{ t('loading') }}</span></div>
@@ -63,7 +107,7 @@
           } @else {
             <li class="row" [class.me]="m['sender'] === 'customer'">
               <div class="bubble">
-                <span class="sr-only">{{ m['sender'] === 'customer' ? tx().msg_you : tx().msg_astrologer }}:</span>
+                <span class="sr-only">{{ m['sender'] === 'customer' ? tx().msg_you : astroName() }}:</span>
                 @for (f of files(m); track f) {
                   @switch (fileKind(f)) {
                     @case ('photo') {
@@ -100,9 +144,9 @@
         } @empty {
           <li class="sys">{{ tx().msg_empty }}</li>
         }
-        @if (comm.astroTyping()) {
+        @if (typing()) {
           <li class="row">
-            <div class="bubble typing" [attr.aria-label]="tx().msg_astrologer + ' ' + tx().st_typing"><span></span><span></span><span></span></div>
+            <div class="bubble typing" [attr.aria-label]="astroName() + ' ' + tx().st_typing"><span></span><span></span><span></span></div>
           </li>
         }
       </ol>
@@ -110,7 +154,7 @@
   </div>
 </ion-content>
 
-<ion-footer class="chat-footer">
+<ion-footer class="chat-footer" [class.with-side]="showSide()">
   <div class="composer">
     @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
 

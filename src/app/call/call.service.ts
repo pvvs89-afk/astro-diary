@@ -33,18 +33,25 @@ export class CallService {
     void this.pbs.pb
       .collection('calls')
       .subscribe('*', (e: { action: string; record: import('pocketbase').RecordModel }) => {
-        if (e.action === 'create' && this.engine.incoming(e.record)) this.kind.set(e.record['kind'] as CallKind);
+        if (e.action === 'create' && this.engine.incoming(e.record)) {
+          this.kind.set(e.record['kind'] as CallKind);
+          this.staffId.set(String(e.record['staff'] ?? ''));
+        }
       })
       .catch(() => (this.listening = false));
   }
 
-  async call(kind: CallKind): Promise<void> {
+  /** The astrologer on the other end of the current call. */
+  readonly staffId = signal('');
+
+  async call(kind: CallKind, staffId: string): Promise<void> {
     const uid = this.pbs.user?.id;
-    if (!uid || this.state() !== 'idle') return;
+    if (!uid || !staffId || this.state() !== 'idle') return;
+    this.staffId.set(staffId);
     this.kind.set(kind);
     this.muted.set(false);
     this.camOff.set(false);
-    await this.engine.start(uid, kind);
+    await this.engine.start(uid, kind, staffId);
   }
 
   accept(): void {

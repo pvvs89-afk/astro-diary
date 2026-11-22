@@ -33,6 +33,7 @@ import {
   personOutline,
   planetOutline,
   starOutline,
+  peopleOutline,
 } from 'ionicons/icons';
 import { I18nService } from './i18n/i18n.service';
 import { PbService } from './services/pb.service';
@@ -92,7 +93,7 @@ export class AppComponent {
   readonly kundliOpen = signal(true);
 
   constructor() {
-    addIcons({ cardOutline, chevronDownOutline, chevronUpOutline, personOutline, homeOutline, planetOutline, heartOutline, listOutline, createOutline, logOutOutline, personCircleOutline, menuOutline, starOutline, chatbubblesOutline, locationOutline });
+    addIcons({ cardOutline, chevronDownOutline, chevronUpOutline, personOutline, homeOutline, planetOutline, heartOutline, listOutline, createOutline, logOutOutline, personCircleOutline, menuOutline, starOutline, chatbubblesOutline, locationOutline, peopleOutline });
     // Unread replies badge: checked when the menu opens and every 2 minutes.
     setInterval(() => this.pbs.isLoggedIn && void this.comm.refreshUnread(), 120_000);
     this.router.events.subscribe((e) => {

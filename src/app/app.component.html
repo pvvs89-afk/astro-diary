@@ -83,19 +83,27 @@
             </ion-item>
           </ion-menu-toggle>
 
-          <!-- My Profile -->
+          <!-- 3. All astrologers (customer adds up to 5 to their chats) -->
           <ion-menu-toggle [autoHide]="false">
-            <ion-item button [detail]="false" class="menu-main" routerLink="/profile" routerLinkActive="selected" ariaCurrentWhenActive="page">
-              <ion-icon slot="start" name="person-circle-outline" aria-hidden="true"></ion-icon>
-              <ion-label>{{ t('profile_menu') }}</ion-label>
+            <ion-item button [detail]="false" class="menu-main" routerLink="/astrologers" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="people-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ ct().dir_menu }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
 
-          <!-- 3. Subscription (plans page) -->
+          <!-- 4. Subscription (plans page) -->
           <ion-menu-toggle [autoHide]="false">
             <ion-item button [detail]="false" class="menu-main" routerLink="/home" routerLinkActive="selected" ariaCurrentWhenActive="page">
               <ion-icon slot="start" name="card-outline" aria-hidden="true"></ion-icon>
               <ion-label>{{ t('subscription') }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+
+          <!-- 5. My Profile -->
+          <ion-menu-toggle [autoHide]="false">
+            <ion-item button [detail]="false" class="menu-main" routerLink="/profile" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <ion-icon slot="start" name="person-circle-outline" aria-hidden="true"></ion-icon>
+              <ion-label>{{ t('profile_menu') }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>

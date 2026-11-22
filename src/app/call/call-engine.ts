@@ -53,8 +53,8 @@ export class CallEngine {
 
   // ---------- Start / answer ----------
 
-  /** Rings the other side. `userId` = the customer of this conversation. */
-  async start(userId: string, kind: CallKind): Promise<void> {
+  /** Rings the other side. `userId` = the customer, `staffId` = the astrologer of this call. */
+  async start(userId: string, kind: CallKind, staffId = ''): Promise<void> {
     if (this.state !== 'idle') return;
     this.setState('outgoing');
     try {
@@ -69,6 +69,7 @@ export class CallEngine {
       await pc.setLocalDescription(offer);
       this.call = await this.pb.collection('calls').create({
         user: userId,
+        ...(staffId ? { staff: staffId } : {}),
         caller: this.side,
         kind,
         status: 'ringing',

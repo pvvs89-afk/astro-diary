@@ -1,0 +1,93 @@
+// Astrologers beside the chat. Colours come from the chat theme (chat-theme.scss).
+// Wide screens: a column on the left (like the admin Team chat). Phones: a row of photos above the chat.
+$side-w: 290px;
+$strip-h: 92px;
+$tools-h: 46px;
+
+.side {
+  position: absolute; z-index: 5; background: var(--head-bg); color: var(--head-ink);
+  overflow: auto; scrollbar-width: thin;
+}
+.side-title { margin: 0; font-size: 13px; font-weight: 600; color: var(--head-muted); letter-spacing: 0.02em; }
+.side-list { list-style: none; margin: 0; padding: 0; display: flex; }
+.s-item {
+  width: 100%; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 10px; border-radius: 12px; padding: 8px;
+}
+.s-item:hover { background: var(--soft); }
+.s-item.sel { background: var(--soft); box-shadow: inset 3px 0 0 var(--accent); }
+.s-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.s-av { position: relative; flex: none; width: 46px; height: 46px; }
+.s-av img, .s-ini { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; display: block; }
+.s-ini {
+  display: flex; align-items: center; justify-content: center; background: var(--avatar-bg); color: var(--avatar-ink);
+  font-weight: 700; font-size: 19px; text-transform: uppercase;
+}
+.s-dot {
+  position: absolute; right: 0; bottom: 0; width: 12px; height: 12px; border-radius: 50%;
+  background: #1fa855; border: 2px solid var(--head-bg);
+}
+.s-badge {
+  position: absolute; top: -4px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: #e24b4a; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--head-bg); box-sizing: content-box;
+}
+.s-text { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.s-text b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-chief { color: var(--accent); font-weight: 600; font-size: 12px; }
+.s-state { color: var(--head-muted); font-size: 12px; }
+.s-state.on { color: var(--online); font-weight: 600; }
+
+// ---------- Wide screens: column on the left ----------
+@media (min-width: 900px) {
+  .side { top: 0; left: 0; bottom: 0; width: $side-w; border-right: 1px solid var(--head-line); padding: 14px 10px; box-sizing: border-box; }
+  .side-title { padding: 0 8px 10px; }
+  .side-list { flex-direction: column; gap: 4px; }
+  ion-content.has-strip { --padding-start: #{$side-w}; }
+  .chat-footer.with-side { padding-left: $side-w; }
+}
+
+// ---------- Phones: row of photos on top ----------
+@media (max-width: 899.98px) {
+  .side {
+    top: 0; left: 0; right: 0; height: $strip-h; border-bottom: 1px solid var(--head-line);
+    padding: 8px 6px; box-sizing: border-box; overflow-y: hidden;
+  }
+  .side-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .side-list { flex-direction: row; gap: 2px; }
+  .s-item { flex-direction: column; gap: 4px; width: 74px; padding: 4px 2px; text-align: center; }
+  .s-item.sel { box-shadow: inset 0 -3px 0 var(--accent); }
+  .s-text b { font-size: 12px; font-weight: 600; max-width: 70px; }
+  .s-chief, .s-state { display: none; }
+  ion-content.has-strip { --padding-top: #{$strip-h}; }
+}
+
+// ---------- Search box and "Online only" (many astrologers) ----------
+.side-tools { display: flex; gap: 6px; align-items: center; }
+.s-search {
+  flex: 1; min-width: 0; height: 34px; padding: 0 12px; border-radius: 17px; font: inherit; font-size: 14px;
+  border: 1px solid var(--input-border); background: var(--input-bg); color: var(--input-ink); outline: none;
+}
+.s-search:focus { border-color: var(--accent); }
+.s-only {
+  flex: none; height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--input-border);
+  background: var(--input-bg); color: var(--head-muted); font: inherit; font-size: 13px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.s-only.on { background: var(--soft); color: var(--soft-ink); border-color: var(--accent); font-weight: 600; }
+.s-only-dot { width: 8px; height: 8px; border-radius: 50%; background: #1fa855; }
+.s-none { padding: 10px 8px; color: var(--head-muted); font-size: 13px; align-self: center; }
+@media (min-width: 900px) {
+  .side-tools { padding: 0 4px 10px; }
+}
+@media (max-width: 899.98px) {
+  ion-content.has-strip.has-tools { --padding-top: #{$strip-h + $tools-h}; }
+  .has-tools .side { height: $strip-h + $tools-h; display: flex; flex-direction: column; }
+  .has-tools .side-list { overflow-x: auto; flex: none; }
+  .side-tools { padding: 0 4px 6px; height: $tools-h - 6px; }
+}
+
+// "+ Add astrologer" (opens All astrologers)
+.s-add { text-decoration: none; }
+.s-plus { background: transparent; border: 2px dashed var(--head-line); color: var(--head-muted); font-size: 24px; font-weight: 400; box-sizing: border-box; }
+.s-add:hover .s-plus { border-color: var(--accent); color: var(--accent); }

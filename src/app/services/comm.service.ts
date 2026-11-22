@@ -12,6 +12,19 @@ export const CHAT_THEMES: { id: ChatTheme; swatch: [string, string, string] }[] 
 ];
 const isTheme = (v: unknown): v is ChatTheme => CHAT_THEMES.some((t) => t.id === v);
 
+/** An astrologer's status for customers: online now, last seen, or offline (switched off). */
+export function astroStatus(a: RecordModel | null | undefined): { online: boolean; lastSeen: Date | null } {
+  if (!a || a['status_mode'] === 'offline') return { online: false, lastSeen: null };
+  // Status worked out by the server (doesn't depend on this phone's clock).
+  if (typeof a['online'] === 'boolean') {
+    const ago = Number(a['seen_ago']);
+    return { online: a['online'], lastSeen: ago >= 0 ? new Date(Date.now() - ago * 1000) : null };
+  }
+  const d = a['last_seen'] ? new Date(String(a['last_seen']).replace(' ', 'T')) : null;
+  if (!d || isNaN(d.getTime())) return { online: false, lastSeen: null };
+  return { online: Date.now() - d.getTime() < 150_000, lastSeen: d };
+}
+
 /** A location reading from the phone, with its place name. */
 export interface HereNow {
   lat: number;
@@ -26,6 +39,8 @@ export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 /** Whole message (all attachments) - keeps uploads reasonable on mobile data. */
 export const MAX_MESSAGE_BYTES = 30 * 1024 * 1024;
 export const MAX_FILES = 5;
+/** Astrologers a customer can add to their chats (besides the chief astrologer). */
+export const MAX_MY_ASTROLOGERS = 5;
 
 /**
  * Messages to the astrologer, shared locations and the profile photo.
@@ -42,21 +57,27 @@ export class CommService {
   /** Admin replies the customer hasn't opened yet (for the menu badge). */
   readonly unread = signal(0);
 
-  /** Astrologer (admin) status for the app: online now / last seen. */
-  readonly astroOnline = signal(false);
-  readonly astroLastSeen = signal<Date | null>(null);
-  /** The admin switched to Offline (then no "last seen" is shown). */
-  readonly astroHidden = signal(false);
+  /** Every astrologer shown to customers (the "All astrologers" page). */
+  readonly astrologers = signal<RecordModel[]>([]);
+  /** The ones in this customer's chats: the chief astrologer + up to 5 they added. */
+  readonly myAstrologers = computed(() => this.astrologers().filter((a) => a['mine']));
+  /** How many the customer added (the chief astrologer doesn't count). */
+  readonly myAddedCount = computed(() => this.astrologers().filter((a) => a['mine'] && a['role'] !== 'super').length);
+  /** Unread replies per astrologer id. */
+  readonly unreadByStaff = signal<Record<string, number>>({});
+  /** Any astrologer online (green dot in the menu). */
+  readonly astroOnline = computed(() => this.myAstrologers().some((a) => astroStatus(a).online));
   private presenceStarted = false;
 
   /** Chat theme: the customer's own choice (Clean light until they pick one). */
   readonly myTheme = signal<ChatTheme | ''>('');
   readonly chatTheme = computed<ChatTheme>(() => this.myTheme() || 'clean');
 
-  /** The astrologer is typing a reply right now. */
-  readonly astroTyping = signal(false);
-  private typingOff: ReturnType<typeof setTimeout> | null = null;
+  /** Astrologers typing a reply to this customer right now (ids). */
+  readonly typingStaff = signal<ReadonlySet<string>>(new Set());
+  private typingOff = new Map<string, ReturnType<typeof setTimeout>>();
   private lastTypingSent = 0;
+  private typingTo = '';
   private stopTypingTimer: ReturnType<typeof setTimeout> | null = null;
 
   private token = '';
@@ -75,18 +96,50 @@ export class CommService {
     return this.pb.files.getURL(record, file, thumb ? { token, thumb } : { token });
   }
 
+  // ---------- Astrologers ----------
+  /** Loads the astrologers this customer may chat with (super admins first). */
+  async loadAstrologers(): Promise<RecordModel[]> {
+    if (!this.pbs.isLoggedIn) return [];
+    try {
+      const list = await this.pb.send<RecordModel[]>('/api/astro/astrologers', { requestKey: null });
+      this.astrologers.set(list);
+      return list;
+    } catch {
+      return this.astrologers();
+    }
+  }
+
+  /** Adds an astrologer to (or removes one from) this customer's chats. */
+  async setMine(staffId: string, add: boolean): Promise<void> {
+    await this.pb.send('/api/astro/my-astrologers', { method: 'POST', body: { id: staffId, add }, requestKey: null });
+    await this.loadAstrologers();
+  }
+
+  /** Profile photo of an astrologer ('' if none). Astrologer photos are public. */
+  astroPhoto(a: RecordModel | null | undefined, thumb = '100x100'): string {
+    return a?.['avatar'] ? this.pb.files.getURL(a, a['avatar'] as string, { thumb }) : '';
+  }
+
   // ---------- Messages ----------
-  messages(): Promise<RecordModel[]> {
+  /**
+   * Chat with one astrologer. Older messages (from before astrologers were added)
+   * have no astrologer and belong to the chat with the super admin.
+   */
+  messages(staffId: string, withOld = false): Promise<RecordModel[]> {
     const uid = this.pbs.user?.id ?? '';
     return this.pb.collection('customer_messages').getFullList({
-      filter: this.pb.filter('user = {:u}', { u: uid }),
+      filter: this.pb.filter(withOld ? "user = {:u} && (staff = {:s} || staff = '')" : 'user = {:u} && staff = {:s}', {
+        u: uid,
+        s: staffId,
+      }),
       sort: 'created',
     });
   }
 
-  async send(note: string, files: File[], where: HereNow | null): Promise<RecordModel> {
+  async send(staffId: string, note: string, files: File[], where: HereNow | null): Promise<RecordModel> {
     const fd = new FormData();
     fd.append('user', this.pbs.user?.id ?? '');
+    fd.append('staff', staffId);
     fd.append('sender', 'customer');
     fd.append('note', note.trim());
     for (const f of files) fd.append('files', f, f.name);
@@ -103,10 +156,11 @@ export class CommService {
     return this.pb.collection('customer_messages').delete(id);
   }
 
-  async markRepliesSeen(): Promise<void> {
+  /** Marks one astrologer's replies as read ('' = all). */
+  async markRepliesSeen(staffId = ''): Promise<void> {
     try {
-      await this.pb.send('/api/astro/messages/seen', { method: 'POST' });
-      this.unread.set(0);
+      await this.pb.send('/api/astro/messages/seen', { method: 'POST', body: { staff: staffId } });
+      await this.refreshUnread();
     } catch {
       /* not important */
     }
@@ -116,11 +170,15 @@ export class CommService {
     const uid = this.pbs.user?.id;
     if (!uid) return;
     try {
-      const r = await this.pb.collection('customer_messages').getList(1, 1, {
+      const list = await this.pb.collection('customer_messages').getFullList({
         filter: this.pb.filter("user = {:u} && sender = 'admin' && seen = false", { u: uid }),
-        fields: 'id',
+        fields: 'id,staff',
+        requestKey: null,
       });
-      this.unread.set(r.totalItems);
+      const by: Record<string, number> = {};
+      for (const m of list as RecordModel[]) by[m['staff'] || ''] = (by[m['staff'] || ''] ?? 0) + 1;
+      this.unreadByStaff.set(by);
+      this.unread.set(list.length);
     } catch {
       /* offline */
     }
@@ -146,17 +204,16 @@ export class CommService {
       void this.pb.send('/api/astro/presence', { method: 'POST', body: { away }, requestKey: null }).catch(() => undefined);
     };
     beat();
-    void this.refreshAstroStatus();
+    void this.loadAstrologers();
     // Online while the app is open - also in a background tab. (On phones the app is
     // paused in the background, so the beats stop and it shows offline after ~2 min.)
-    setInterval(() => {
-      beat();
-      void this.refreshAstroStatus();
-    }, 60_000);
+    setInterval(() => beat(), 60_000);
+    // Astrologers' status: refreshed every 30 s (and at once when one switches Online/Offline).
+    setInterval(() => void this.loadAstrologers(), 30_000);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         beat();
-        void this.refreshAstroStatus();
+        void this.loadAstrologers();
       }
     });
     // Tab / app closed: show offline at once (keepalive lets the request finish).
@@ -169,45 +226,38 @@ export class CommService {
         body: JSON.stringify({ away: true }),
       }).catch(() => undefined);
     });
-    // Live "typing…" from the astrologer.
+    // Live "typing…" from an astrologer.
     void this.pb.realtime
-      .subscribe('astro_typing', (e: { from?: string; on?: boolean }) => {
-        if (e?.from !== 'admin') return;
-        if (this.typingOff) clearTimeout(this.typingOff);
-        this.astroTyping.set(!!e.on);
-        if (e.on) this.typingOff = setTimeout(() => this.astroTyping.set(false), 6000);
+      .subscribe('astro_typing', (e: { from?: string; staff?: string; on?: boolean }) => {
+        if (e?.from !== 'admin' || !e.staff) return;
+        const sid = e.staff;
+        const t = this.typingOff.get(sid);
+        if (t) clearTimeout(t);
+        this.setTyping(sid, !!e.on);
+        if (e.on) this.typingOff.set(sid, setTimeout(() => this.setTyping(sid, false), 6000));
       })
       .catch(() => undefined);
-    // Live: the admin switching Online/Offline shows at once.
+    // Live: an astrologer switching Online/Offline shows at once.
     void this.pb
-      .collection('astro_status')
-      .subscribe('*', (e: { record: RecordModel }) => this.applyAstroStatus(e.record))
+      .collection('staff')
+      .subscribe('*', () => void this.loadAstrologers())
       .catch(() => undefined);
   }
 
-  async refreshAstroStatus(): Promise<void> {
-    if (!this.pbs.isLoggedIn) return;
-    try {
-      const rec = await this.pb.collection('astro_status').getFirstListItem("key = 'main'", { requestKey: null });
-      this.applyAstroStatus(rec);
-    } catch {
-      /* offline */
-    }
+  private setTyping(staffId: string, on: boolean): void {
+    const next = new Set(this.typingStaff());
+    if (on) next.add(staffId);
+    else next.delete(staffId);
+    this.typingStaff.set(next);
   }
 
-  private applyAstroStatus(rec: RecordModel): void {
-    const hidden = rec['admin_mode'] === 'offline';
-    const seen = rec['admin_last_seen'] ? new Date(String(rec['admin_last_seen']).replace(' ', 'T')) : null;
-    this.astroHidden.set(hidden);
-    this.astroLastSeen.set(hidden ? null : seen);
-    this.astroOnline.set(!hidden && !!seen && Date.now() - seen.getTime() < 150_000);
-  }
-
-  /** Call on every key press in the chat box; tells the astrologer "typing…" (throttled). */
-  typing(): void {
+  /** Call on every key press in the chat box; tells that astrologer "typing…" (throttled). */
+  typing(staffId: string): void {
+    if (this.typingTo !== staffId) this.stopTyping();
+    this.typingTo = staffId;
     if (Date.now() - this.lastTypingSent > 3000) {
       this.lastTypingSent = Date.now();
-      this.sendTyping(true);
+      this.sendTyping(staffId, true);
     }
     if (this.stopTypingTimer) clearTimeout(this.stopTypingTimer);
     this.stopTypingTimer = setTimeout(() => this.stopTyping(), 4000);
@@ -216,13 +266,13 @@ export class CommService {
   stopTyping(): void {
     if (this.stopTypingTimer) clearTimeout(this.stopTypingTimer);
     this.stopTypingTimer = null;
-    if (!this.lastTypingSent) return;
+    if (!this.lastTypingSent || !this.typingTo) return;
     this.lastTypingSent = 0;
-    this.sendTyping(false);
+    this.sendTyping(this.typingTo, false);
   }
 
-  private sendTyping(on: boolean): void {
-    void this.pb.send('/api/astro/typing', { method: 'POST', body: { on }, requestKey: null }).catch(() => undefined);
+  private sendTyping(staffId: string, on: boolean): void {
+    void this.pb.send('/api/astro/typing', { method: 'POST', body: { staff: staffId, on }, requestKey: null }).catch(() => undefined);
   }
 
   /** Saves the customer's own chat theme to their account. */

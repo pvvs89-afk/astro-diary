@@ -39,7 +39,17 @@ export const routes: Routes = [
     loadComponent: () => import('./tarabalam/tarabalam.page').then((m) => m.TarabalamPage),
   },
   {
+    path: 'astrologers',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/astrologers.page').then((m) => m.AstrologersPage),
+  },
+  {
     path: 'messages',
+    canActivate: [authGuard],
+    loadComponent: () => import('./comm/messages.page').then((m) => m.MessagesPage),
+  },
+  {
+    path: 'messages/:staff',
     canActivate: [authGuard],
     loadComponent: () => import('./comm/messages.page').then((m) => m.MessagesPage),
   },

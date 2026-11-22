@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
 import {
   ActionSheetController,
   AlertController,
@@ -38,6 +39,7 @@ import { LangButtonComponent } from '../i18n/lang-button.component';
 import {
   CHAT_THEMES,
   CommService,
+  astroStatus,
   MAX_FILE_BYTES,
   MAX_FILES,
   MAX_MESSAGE_BYTES,
@@ -55,8 +57,13 @@ interface Pending {
 }
 
 const MAX_RECORD_SECONDS = 300;
+const LAST_KEY = 'astro.lastAstrologer';
 
-/** Chat with the astrologer: text, photos, videos, voice notes and location. */
+/**
+ * Message Astrologer: the chat (text, photos, videos, voice notes, location) with the
+ * list of astrologers beside it - a column on the right on wide screens, a row of
+ * photos on top on phones. Tapping an astrologer switches the chat.
+ */
 @Component({
   selector: 'app-messages',
   standalone: true,
@@ -82,11 +89,47 @@ const MAX_RECORD_SECONDS = 300;
     '[class.theme-saffron]': "comm.chatTheme() === 'saffron'",
     '[class.theme-dark]': "comm.chatTheme() === 'dark'",
   },
-  styleUrls: ['./chat-theme.scss'],
+  styleUrls: ['./chat-theme.scss', './chat-side.scss'],
 })
 export class MessagesPage implements OnInit, OnDestroy {
   readonly comm = inject(CommService);
   readonly calls = inject(CallService);
+  private route = inject(ActivatedRoute);
+  private location = inject(Location);
+  /** The astrologer of this chat (from the address /messages/:staff, else the last one used). */
+  readonly staffId = signal(this.route.snapshot.paramMap.get('staff') ?? '');
+  /** Search box and "Online only" switch (shown when there are many astrologers). */
+  readonly search = signal('');
+  readonly onlineOnly = signal(false);
+  readonly manyAstro = computed(() => this.comm.myAstrologers().length > 8);
+  /** Show the astrologer column / row (also to offer "Add astrologer" when others exist). */
+  readonly showSide = computed(() => this.list().length > 1 || this.comm.astrologers().length > 1);
+  /** The list after search / online filter (the open chat always stays in it). */
+  readonly shown = computed(() => {
+    const q = this.search().trim().toLowerCase();
+    const only = this.onlineOnly();
+    return this.list().filter(
+      (a) =>
+        a.id === this.staffId() ||
+        ((!q || String(a['name'] ?? '').toLowerCase().includes(q) || String(a['bio'] ?? '').toLowerCase().includes(q)) &&
+          (!only || this.isOnline(a))),
+    );
+  });
+  /** All astrologers: online first, then the chief astrologer, then by name. */
+  readonly list = computed(() =>
+    [...this.comm.myAstrologers()].sort(
+      (a, b) =>
+        Number(this.isOnline(b)) - Number(this.isOnline(a)) ||
+        Number(b['role'] === 'super') - Number(a['role'] === 'super') ||
+        String(a['name'] ?? '').localeCompare(String(b['name'] ?? '')),
+    ),
+  );
+  readonly astro = computed(() => this.comm.astrologers().find((a) => a.id === this.staffId()) ?? null);
+  readonly astroName = computed(() => String(this.astro()?.['name'] || this.tx().msg_astrologer));
+  /** The chief (super admin) chat also shows older messages sent before astrologers existed. */
+  readonly isChief = computed(() => this.astro()?.['role'] === 'super');
+  readonly status = computed(() => astroStatus(this.astro()));
+  readonly typing = computed(() => this.comm.typingStaff().has(this.staffId()));
   private i18n = inject(I18nService);
   private alerts = inject(AlertController);
   private sheets = inject(ActionSheetController);
@@ -139,7 +182,7 @@ export class MessagesPage implements OnInit, OnDestroy {
   onType(ev: Event): void {
     const el = ev.target as HTMLTextAreaElement;
     this.note.set(el.value);
-    if (el.value.trim()) this.comm.typing();
+    if (el.value.trim()) this.comm.typing(this.staffId());
     else this.comm.stopTyping();
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
@@ -176,12 +219,62 @@ export class MessagesPage implements OnInit, OnDestroy {
     return String(m['note']).includes('ideo') ? 'videocam' : 'call';
   }
 
+  isOnline(a: RecordModel): boolean {
+    return astroStatus(a).online;
+  }
+
+  /** Unread replies; the chief astrologer's chat also counts older messages without an astrologer. */
+  unreadOf(a: RecordModel): number {
+    const by = this.comm.unreadByStaff();
+    return (by[a.id] ?? 0) + (a['role'] === 'super' ? (by[''] ?? 0) : 0);
+  }
+
+  /** Switch the chat to another astrologer (stays on this screen). */
+  select(a: RecordModel): void {
+    if (a.id === this.staffId()) return;
+    this.comm.stopTyping();
+    this.staffId.set(a.id);
+    this.remember(a.id);
+    this.location.replaceState('/messages/' + a.id);
+    this.items.set([]);
+    this.error.set('');
+    void this.load();
+  }
+
+  private remember(id: string): void {
+    try {
+      localStorage.setItem(LAST_KEY, id);
+    } catch {
+      /* not remembered */
+    }
+  }
+
   async ngOnInit(): Promise<void> {
     this.comm.startPresence();
-    void this.comm.refreshAstroStatus();
+    if (!this.comm.astrologers().length) await this.comm.loadAstrologers();
+    void this.comm.refreshUnread();
+    // No astrologer in the address: the last one used, else the first in the list.
+    const ids = this.list().map((a) => a.id);
+    if (!this.staffId() || !ids.includes(this.staffId())) {
+      let last = '';
+      try {
+        last = localStorage.getItem(LAST_KEY) ?? '';
+      } catch {
+        /* none */
+      }
+      const pick = ids.includes(last) ? last : (ids[0] ?? '');
+      if (pick && pick !== this.staffId()) {
+        this.staffId.set(pick);
+        this.location.replaceState('/messages/' + pick);
+      }
+    }
+    if (this.staffId()) this.remember(this.staffId());
     await this.load();
     try {
-      this.unsub = await this.comm.watch(() => void this.load(false));
+      this.unsub = await this.comm.watch(() => {
+        void this.load(false);
+        void this.comm.refreshUnread();
+      });
     } catch {
       /* live updates are optional */
     }
@@ -202,10 +295,13 @@ export class MessagesPage implements OnInit, OnDestroy {
     if (spinner) this.loading.set(true);
     this.error.set('');
     try {
-      const [list, token] = await Promise.all([this.comm.messages(), this.comm.fileToken()]);
+      const [list, token] = await Promise.all([this.comm.messages(this.staffId(), this.isChief()), this.comm.fileToken()]);
       this.token.set(token);
       this.items.set(list);
-      if (list.some((m) => m['sender'] === 'admin' && !m['seen'])) await this.comm.markRepliesSeen();
+      if (list.some((m) => m['sender'] === 'admin' && !m['seen'])) {
+        await this.comm.markRepliesSeen(this.staffId());
+        if (this.isChief()) await this.comm.markRepliesSeen('');
+      }
       setTimeout(() => this.content()?.scrollToBottom(200), 50);
     } catch (e) {
       this.error.set(this.i18n.err(e));
@@ -343,7 +439,7 @@ export class MessagesPage implements OnInit, OnDestroy {
         }
       }
       this.comm.stopTyping();
-      await this.comm.send(this.note(), files, where);
+      await this.comm.send(this.staffId(), this.note(), files, where);
       for (const p of this.pending()) URL.revokeObjectURL(p.preview);
       this.pending.set([]);
       this.note.set('');
