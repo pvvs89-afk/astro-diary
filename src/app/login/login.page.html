@@ -82,7 +82,10 @@
       type="password"
       [autocomplete]="isRegister ? 'new-password' : 'current-password'"
       name="password" [(ngModel)]="password"
-    ></ion-input>
+    >
+      <!-- Eye icon: show / hide the password -->
+      <ion-input-password-toggle slot="end" color="medium"></ion-input-password-toggle>
+    </ion-input>
 
     <ion-button expand="block" shape="round" type="submit" [disabled]="busy()">
       @if (busy()) {

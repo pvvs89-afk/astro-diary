@@ -5,6 +5,7 @@ import {
   IonButton,
   IonContent,
   IonInput,
+  IonInputPasswordToggle,
   IonSelect,
   IonSelectOption,
   IonSpinner,
@@ -18,7 +19,7 @@ import { PbService } from '../services/pb.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, IonContent, IonInput, IonButton, IonSpinner, IonSelect, IonSelectOption, LangButtonComponent],
+  imports: [FormsModule, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonSelect, IonSelectOption, LangButtonComponent],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })
