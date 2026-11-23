@@ -88,5 +88,8 @@ export function apply(t: AppTheme): void {
   const th = APP_THEMES.find((x) => x.id === t) ?? APP_THEMES[0];
   el.classList.toggle('ion-palette-dark', th.dark);
   el.classList.add('app-theme-' + th.id);
+  // Tell the phone's browser this page has its own colours, so its dark mode leaves it alone.
+  document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', th.dark ? 'only dark' : 'only light');
+  el.style.colorScheme = th.dark ? 'only dark' : 'only light';
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', th.bar);
 }

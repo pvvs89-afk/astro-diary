@@ -9,8 +9,10 @@
 //   --ad-banner, --ad-banner-ink, --ad-tile1 … --ad-tile6, --ad-sky (page background)
 
 :root {
-  color-scheme: light;
+  color-scheme: only light;
 }
+// Phone dark mode must not recolour the app: the theme the person chose decides.
+html, body { forced-color-adjust: none; }
 // Fonts (all themes): Plus Jakarta Sans for text; Hindi, Tamil, Telugu and Malayalam
 // letters come from the matching Baloo font, so every language looks rounded and friendly.
 :root {
@@ -61,7 +63,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Sunrise Orange (default)
 :root.app-theme-sunrise, :root.app-theme-sunrise.md, :root.app-theme-sunrise.ios {
-  color-scheme: light;
+  color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
   --ion-background-color: #FFF5EB;
@@ -116,7 +118,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Cosmic Night
 :root.app-theme-cosmic, :root.app-theme-cosmic.md, :root.app-theme-cosmic.ios {
-  color-scheme: dark;
+  color-scheme: only dark;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
   --ion-background-color: #0D0A2B;
@@ -171,7 +173,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Saffron Sunrise
 :root.app-theme-saffron, :root.app-theme-saffron.md, :root.app-theme-saffron.ios {
-  color-scheme: light;
+  color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
   --ion-background-color: #FFF7EC;
@@ -226,7 +228,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Celestial Pastel
 :root.app-theme-pastel, :root.app-theme-pastel.md, :root.app-theme-pastel.ios {
-  color-scheme: light;
+  color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
   --ion-background-color: #F6F2FF;
@@ -281,7 +283,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Emerald Temple
 :root.app-theme-emerald, :root.app-theme-emerald.md, :root.app-theme-emerald.ios {
-  color-scheme: dark;
+  color-scheme: only dark;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
   --ion-background-color: #0A231E;
@@ -336,7 +338,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Rose Moon
 :root.app-theme-rose, :root.app-theme-rose.md, :root.app-theme-rose.ios {
-  color-scheme: light;
+  color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Playfair Display', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
   --ion-background-color: #FFF4F6;
@@ -391,7 +393,7 @@ h1, h2, h3, ion-title, .ad-head {
 
 // Ocean Zodiac
 :root.app-theme-ocean, :root.app-theme-ocean.md, :root.app-theme-ocean.ios {
-  color-scheme: light;
+  color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
   --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
   --ion-background-color: #EFFAFB;
