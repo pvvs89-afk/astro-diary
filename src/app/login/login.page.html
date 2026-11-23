@@ -4,7 +4,7 @@
   </div>
 
   <form class="wrap" novalidate (ngSubmit)="submit()">
-    <img class="logo" src="assets/logo/astro-diary-logo-white-tight.svg" alt="Astro Diary" />
+    <span class="ad-logo logo" role="img" aria-label="Astro Diary"><span class="ad-logo-art"></span></span>
     <p class="sub">{{ isRegister ? t('create_account') : t('welcome_back') }}</p>
 
     @if (isRegister) {
