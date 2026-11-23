@@ -10,6 +10,13 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  @if (loading()) {
+    <div class="page-loading" role="status" aria-live="polite">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>{{ t('loading') }}</span>
+    </div>
+  }
+  @if (!loading()) {
   <div class="wrap center-col">
     @if (photo()) {
       <img class="avatar-big" [src]="photo()" [alt]="tx().prof_title" />
@@ -49,23 +56,14 @@
           </button>
         }
       </div>
+      @if (appTheme.theme() !== defaultTheme) {
+        <button type="button" [disabled]="busy()" (click)="resetAppTheme()"
+                style="margin-top: 10px; align-self: flex-start; background: none; border: 1px solid var(--ion-color-primary); color: var(--ion-color-primary); border-radius: 18px; padding: 7px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;">
+          ↺ {{ resetText() }}
+        </button>
+      }
     </section>
 
-    <section class="theme-box" aria-labelledby="theme-h">
-      <b id="theme-h">{{ tx().prof_theme }}</b>
-      <small class="muted">{{ tx().prof_theme_note }}</small>
-      <div class="themes" role="radiogroup" aria-labelledby="theme-h">
-        @for (th of themes; track th.id) {
-          <button type="button" role="radio" class="theme" [class.sel]="comm.chatTheme() === th.id" [attr.aria-checked]="comm.chatTheme() === th.id"
-                  [disabled]="busy()" (click)="setTheme(th.id)">
-            <span class="sw" aria-hidden="true">
-              <i [style.background]="th.swatch[0]"></i><i [style.background]="th.swatch[1]"></i><i [style.background]="th.swatch[2]"></i>
-            </span>
-            <span>{{ themeName(th.id) }}</span>
-          </button>
-        }
-      </div>
-    </section>
 
     <div class="switch-row">
       <div>
@@ -75,4 +73,5 @@
       <ion-toggle aria-labelledby="show-online-label" [checked]="!hideOnline()" [disabled]="busy()" (ionChange)="setShowOnline($any($event).detail.checked)"></ion-toggle>
     </div>
   </div>
+  }
 </ion-content>

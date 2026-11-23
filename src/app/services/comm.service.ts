@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { RecordModel } from 'pocketbase';
 import { Place, PbService } from './pb.service';
 
-export type ChatTheme = 'clean' | 'lavender' | 'saffron' | 'dark';
+export type ChatTheme = 'app' | 'clean' | 'lavender' | 'saffron' | 'dark';
 /** Themes with three preview colours (header, own bubble, background). */
 export const CHAT_THEMES: { id: ChatTheme; swatch: [string, string, string] }[] = [
   { id: 'clean', swatch: ['#ffffff', '#185fa5', '#f4f3ef'] },
@@ -76,7 +76,8 @@ export class CommService {
 
   /** Chat theme: the customer's own choice (Clean light until they pick one). */
   readonly myTheme = signal<ChatTheme | ''>('');
-  readonly chatTheme = computed<ChatTheme>(() => this.myTheme() || 'clean');
+  /** Chats always follow the app theme (kept in sync; no separate chat theme). */
+  readonly chatTheme = computed<ChatTheme>(() => 'app');
 
   /** Astrologers typing a reply to this customer right now (ids). */
   readonly typingStaff = signal<ReadonlySet<string>>(new Set());

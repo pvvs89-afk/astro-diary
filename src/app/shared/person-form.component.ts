@@ -7,6 +7,15 @@ import { Key } from '../i18n/en';
 import { I18nService } from '../i18n/i18n.service';
 import { PbService, PersonBirth, Place } from '../services/pb.service';
 
+/** Shown under the birth place while the current location is being found. */
+const LOCATING: Record<string, string> = {
+  en: 'Finding your current location…',
+  hi: 'आपका वर्तमान स्थान ढूँढ रहे हैं…',
+  ta: 'உங்கள் தற்போதைய இடத்தைக் கண்டறிகிறது…',
+  te: 'మీ ప్రస్తుత స్థానాన్ని కనుగొంటోంది…',
+  ml: 'നിങ്ങളുടെ നിലവിലെ സ്ഥലം കണ്ടെത്തുന്നു…',
+};
+
 /**
  * One person's birth details: name, date, time and birth place
  * (same dropdowns and place search as the birth details page).
@@ -87,8 +96,8 @@ import { PbService, PersonBirth, Place } from '../services/pb.service';
         (keyup.enter)="pickFirst()"
       >
         <span slot="end" class="place-status">
-          @if (searching()) {
-            <ion-spinner name="crescent"></ion-spinner>
+          @if (searching() || locating()) {
+            <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
           } @else if (selectedPlace()) {
             <ion-icon name="checkmark-circle" color="success" role="img" aria-label="OK"></ion-icon>
           } @else {
@@ -97,7 +106,9 @@ import { PbService, PersonBirth, Place } from '../services/pb.service';
         </span>
       </ion-input>
 
-      @if (places(); as list) {
+      @if (locating()) {
+        <p class="hint" role="status" aria-live="polite">{{ locatingText() }}</p>
+      } @else if (places(); as list) {
         @if (list.length) {
           <ion-list lines="full" class="places">
             @for (p of list; track p.name; let i = $index) {
@@ -156,6 +167,9 @@ export class PersonFormComponent implements OnInit {
   readonly places = signal<Place[] | null>(null);
   readonly selectedPlace = signal<Place | null>(null);
   private searchSeq = 0;
+  /** Finding the current location for the place (match making), until it arrives or fails. */
+  readonly locating = signal(false);
+  readonly locatingText = computed(() => LOCATING[this.i18n.lang()] ?? LOCATING['en']);
 
   constructor() {
     addIcons({ searchOutline, locationOutline, checkmarkCircle });
@@ -166,9 +180,14 @@ export class PersonFormComponent implements OnInit {
     if (this.prefillLocation()) {
       // Asks the phone / browser for the location once (shared by both forms);
       // if the customer says no, the place simply stays empty.
-      void this.pbs.currentPlace().then((p) => {
-        if (p && !this.selectedPlace() && !this.placeQuery.trim()) this.choosePlace(p);
-      });
+      this.locating.set(true);
+      void this.pbs
+        .currentPlace()
+        .then((p) => {
+          if (p && !this.selectedPlace() && !this.placeQuery.trim()) this.choosePlace(p);
+        })
+        .catch(() => undefined)
+        .finally(() => this.locating.set(false));
     }
   }
 
@@ -236,6 +255,7 @@ export class PersonFormComponent implements OnInit {
 
   async onPlaceInput(value: string | null | undefined): Promise<void> {
     this.placeQuery = value ?? '';
+    if (this.placeQuery.trim()) this.locating.set(false);
     const q = this.placeQuery.trim();
     const seq = ++this.searchSeq;
     if (this.selectedPlace() && q !== this.selectedPlace()!.name) this.selectedPlace.set(null);
@@ -263,6 +283,7 @@ export class PersonFormComponent implements OnInit {
   }
 
   choosePlace(p: Place): void {
+    this.locating.set(false);
     this.searchSeq++;
     this.searching.set(false);
     this.selectedPlace.set(p);

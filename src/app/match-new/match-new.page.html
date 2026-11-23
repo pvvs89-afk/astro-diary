@@ -12,7 +12,14 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="wrap">
+  @if (loading()) {
+    <div class="page-loading" role="status" aria-live="polite">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>{{ t('loading') }}</span>
+    </div>
+  }
+  <!-- Kept in the page (hidden) while loading, so both forms can find the current place. -->
+  <div class="wrap" [class.is-loading]="loading()" [attr.aria-hidden]="loading() ? 'true' : null">
     <!-- Method -->
     <fieldset class="methods">
       <legend>{{ t('match_method') }}</legend>
@@ -51,7 +58,7 @@
 
     <div class="actions">
       <ion-button fill="outline" shape="round" [disabled]="busy()" (click)="cancel()">{{ t('cancel') }}</ion-button>
-      <ion-button shape="round" [disabled]="busy()" (click)="submit(boyForm, girlForm)">
+      <ion-button shape="round" [disabled]="busy() || loading()" (click)="submit(boyForm, girlForm)">
         @if (busy()) {
           <ion-spinner name="crescent"></ion-spinner>&nbsp; {{ t('matching') }}
         } @else {

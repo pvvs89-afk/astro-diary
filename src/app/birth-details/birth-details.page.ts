@@ -57,6 +57,8 @@ export class BirthDetailsPage implements OnInit {
   readonly t = this.i18n.t;
 
   readonly busy = signal(false);
+  /** Spinner until the saved details are loaded into the form. */
+  readonly loading = signal(true);
   /** Saved details being edited (null = first time, nothing to go back to). */
   readonly existing = signal<RecordModel | null>(null);
 
@@ -122,6 +124,8 @@ export class BirthDetailsPage implements OnInit {
       if (b) this.fill(b);
     } catch {
       /* offline - the form just starts empty */
+    } finally {
+      this.loading.set(false);
     }
   }
 

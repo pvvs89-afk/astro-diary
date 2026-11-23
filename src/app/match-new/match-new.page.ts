@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonBackButton,
@@ -51,12 +51,22 @@ export class MatchNewPage implements OnInit {
   readonly busy = signal(false);
   /** The customer's own saved birth details (for the "use my details" button). */
   readonly mine = signal<RecordModel | null>(null);
+  /** Still fetching the customer's own saved details. */
+  readonly loadingMine = signal(true);
+  private readonly boyForm = viewChild<PersonFormComponent>('boyForm');
+  private readonly girlForm = viewChild<PersonFormComponent>('girlForm');
+  /** The page shows a loading spinner until everything is in: saved details and both birth places. */
+  readonly loading = computed(
+    () => this.loadingMine() || (this.boyForm()?.locating() ?? true) || (this.girlForm()?.locating() ?? true),
+  );
 
   async ngOnInit(): Promise<void> {
     try {
       this.mine.set(await this.pbs.latestBirthDetails());
     } catch {
       /* not needed */
+    } finally {
+      this.loadingMine.set(false);
     }
   }
 

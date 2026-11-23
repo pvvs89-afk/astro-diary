@@ -13,7 +13,13 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="wrap">
+  @if (loading()) {
+    <div class="page-loading" role="status" aria-live="polite">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>{{ t('loading') }}</span>
+    </div>
+  }
+  <div class="wrap" [class.is-loading]="loading()">
     <p>{{ t('birth_intro') }}</p>
 
     <ion-input

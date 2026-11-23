@@ -12,13 +12,14 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chevronForward, notifications, notificationsOutline } from 'ionicons/icons';
+import { alarm, alertCircle, checkmarkCircle, chevronForward, informationCircle, notifications, notificationsOutline, pricetag, sparkles, warning } from 'ionicons/icons';
 import { RecordModel } from 'pocketbase';
 import { I18nService } from '../i18n/i18n.service';
 import { LangButtonComponent } from '../i18n/lang-button.component';
 import { PbService } from '../services/pb.service';
 import { NotifyService } from '../services/notify.service';
 import { NOTIFY_TEXT } from './notify-text';
+import { NOTIFY_KIND_CSS, NOTIFY_KIND_NAMES, notifyKind } from './notify-kinds';
 
 /** Notifications from Astro Diary: newest first, unread highlighted. Updates live. */
 @Component({
@@ -50,12 +51,12 @@ import { NOTIFY_TEXT } from './notify-text';
           <ul class="list">
             @for (n of items(); track n.id) {
               <li>
-                <button type="button" class="item" [class.unread]="!n['read']" (click)="open(n)">
-                  <span class="ic" aria-hidden="true"><ion-icon [name]="n['read'] ? 'notifications-outline' : 'notifications'"></ion-icon></span>
+                <button type="button" [class]="'item nk k-' + kindOf(n).id" [class.unread]="!n['read']" [style.--k]="kindOf(n).color" (click)="open(n)">
+                  <span class="nk-ic" aria-hidden="true"><ion-icon [name]="kindOf(n).icon"></ion-icon></span>
                   <span class="body">
-                    <b>{{ n['title'] }}</b>
+                    <span class="meta"><span class="nk-badge">{{ kindName(n) }}</span><small class="when">{{ when(n['created']) }}</small></span>
+                    <b class="ttl">{{ n['title'] }}</b>
                     @if (n['body']) { <span class="msg">{{ n['body'] }}</span> }
-                    <small class="when">{{ when(n['created']) }}</small>
                   </span>
                   @if (n['link']) { <ion-icon class="go" name="chevron-forward" aria-hidden="true"></ion-icon> }
                   @if (!n['read']) { <span class="dot" [attr.aria-label]="tx().n_unread"></span> }
@@ -70,24 +71,26 @@ import { NOTIFY_TEXT } from './notify-text';
     </ion-content>
   `,
   styles: [
+    NOTIFY_KIND_CSS,
     `
       .wrap { max-width: 760px; margin: 0 auto; }
       .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
       .count { font-weight: 600; color: var(--ion-color-primary); }
-      .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+      .list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
       .item {
-        width: 100%; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 12px 14px; border-radius: 14px;
+        width: 100%; display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 9px 12px; border-radius: 12px;
         border: 1px solid var(--ion-color-step-150, #e4e4e4); background: var(--ion-background-color); color: inherit; font: inherit; cursor: pointer; position: relative;
       }
-      .item.unread { background: rgba(var(--ion-color-primary-rgb), 0.07); border-color: rgba(var(--ion-color-primary-rgb), 0.3); }
-      .ic { flex: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        background: rgba(var(--ion-color-primary-rgb), 0.12); color: var(--ion-color-primary); font-size: 20px; }
-      .body { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-      .body b { font-size: 15px; }
-      .msg { white-space: pre-wrap; word-break: break-word; font-size: 14px; color: var(--ion-color-medium-shade); }
-      .when { color: var(--ion-color-medium); font-size: 12px; }
-      .go { align-self: center; color: var(--ion-color-medium); }
-      .dot { position: absolute; top: 12px; right: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--ion-color-danger); }
+      .item.unread { box-shadow: 0 2px 8px color-mix(in srgb, var(--k) 18%, transparent); }
+      .body { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-right: 10px; }
+      .meta { display: flex; align-items: center; gap: 8px; }
+      .ttl { font-size: 14px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .item:not(.unread) .ttl { font-weight: 600; }
+      .msg { font-size: 13px; line-height: 1.35; color: var(--ion-color-medium); word-break: break-word;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .when { color: var(--ion-color-medium); font-size: 11px; }
+      .go { align-self: center; color: var(--ion-color-medium); font-size: 16px; flex: none; }
+      .dot { position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--k, var(--ion-color-danger)); }
       .empty { color: var(--ion-color-medium); padding: 20px 4px; text-align: center; }
       .center { display: flex; justify-content: center; padding: 40px; }
       .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -105,7 +108,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   private unsub: (() => Promise<void>) | null = null;
 
   constructor() {
-    addIcons({ chevronForward, notifications, notificationsOutline });
+    addIcons({ alarm, alertCircle, checkmarkCircle, chevronForward, informationCircle, notifications, notificationsOutline, pricetag, sparkles, warning });
   }
 
   async ngOnInit(): Promise<void> {
@@ -143,6 +146,14 @@ export class NotificationsPage implements OnInit, OnDestroy {
     const list = this.items();
     this.items.update((l) => l.map((x) => ({ ...x, read: true }) as RecordModel));
     await this.notify.markAllRead(list).catch(() => undefined);
+  }
+
+  kindOf(n: RecordModel) {
+    return notifyKind(n['kind']);
+  }
+
+  kindName(n: RecordModel): string {
+    return NOTIFY_KIND_NAMES[this.i18n.lang()][this.kindOf(n).id];
   }
 
   when(v: unknown): string {

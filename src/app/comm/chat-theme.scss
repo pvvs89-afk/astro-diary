@@ -1,5 +1,52 @@
 // Chat themes (customer app). The page gets a class theme-clean / theme-lavender /
 // theme-saffron / theme-dark; everything below reads these colour variables.
+// Follows the app theme (all chats use this now): colours come from the app theme's
+// own values, so the chat always matches Sunrise Orange, Cosmic Night and the rest.
+:host(.theme-app) {
+  --head-bg: var(--ad-card, var(--ion-background-color));
+  --head-ink: var(--ion-text-color);
+  --head-muted: var(--ion-color-medium);
+  --head-line: var(--ad-line);
+  --avatar-bg: color-mix(in srgb, var(--ion-color-primary) 16%, var(--ad-card, #fff));
+  --avatar-ink: var(--ion-color-primary);
+  --calla-bg: var(--ad-good, #1d9e75);
+  --calla-ink: #ffffff;
+  --callv-bg: var(--ion-color-primary);
+  --callv-ink: var(--ion-color-primary-contrast);
+  --call-border: transparent;
+  --call-hover: color-mix(in srgb, var(--ion-color-primary) 80%, #000);
+  --call-radius: 50%;
+  --canvas: var(--ion-background-color);
+  --sys-bg: var(--ad-card, #fff);
+  --sys-ink: var(--ion-color-medium);
+  --line: var(--ad-line);
+  --in-bg: var(--ad-card, #fff);
+  --in-ink: var(--ion-text-color);
+  --in-border: var(--ad-line);
+  --out-bg: var(--ion-color-primary);
+  --out-ink: var(--ion-color-primary-contrast);
+  --meta: var(--ion-color-medium);
+  --meta-out: color-mix(in srgb, var(--ion-color-primary-contrast) 78%, transparent);
+  --seen: var(--ion-color-primary-contrast);
+  --r-in: 18px 18px 18px 4px;
+  --r-out: 18px 18px 4px 18px;
+  --day-bg: var(--ad-card2, #eee);
+  --day-ink: var(--ion-color-medium);
+  --foot-bg: var(--ad-card, #fff);
+  --input-bg: var(--ion-background-color);
+  --input-border: var(--ad-line);
+  --input-ink: var(--ion-text-color);
+  --icon: var(--ion-color-medium);
+  --accent: var(--ion-color-primary);
+  --accent-ink: var(--ion-color-primary-contrast);
+  --accent-hover: var(--ion-color-primary-shade);
+  --soft: color-mix(in srgb, var(--ion-color-primary) 14%, var(--ad-card, #fff));
+  --soft-ink: var(--ion-color-primary);
+  --online: var(--ad-good, #0f6e56);
+  --link: var(--ion-color-primary);
+  --dots: var(--ion-color-medium);
+}
+
 :host(.theme-clean) {
   --head-bg: #ffffff;
   --head-ink: #2c2c2a;

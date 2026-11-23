@@ -16,7 +16,8 @@ import { I18nService } from '../i18n/i18n.service';
 import { LangButtonComponent } from '../i18n/lang-button.component';
 import { CHAT_THEMES, ChatTheme, CommService, shrinkImage } from '../services/comm.service';
 import { PbService } from '../services/pb.service';
-import { APP_THEMES, AppTheme, AppThemeService } from '../services/app-theme.service';
+import { APP_THEMES, AppTheme, AppThemeService, DEFAULT_APP_THEME } from '../services/app-theme.service';
+import { THEME_NAMES, THEME_RESET } from '../start/start-text';
 import { COMM_TEXT } from './comm-text';
 
 /** My Profile: name, email and profile photo (cropped square, 512 px, on the phone). */
@@ -32,6 +33,8 @@ export class ProfilePage implements OnInit {
   readonly themes = CHAT_THEMES;
   readonly appTheme = inject(AppThemeService);
   readonly appThemes = APP_THEMES;
+  readonly defaultTheme = DEFAULT_APP_THEME;
+  readonly resetText = computed(() => THEME_RESET[this.i18n.lang()]);
   private pbs = inject(PbService);
   private i18n = inject(I18nService);
   private alerts = inject(AlertController);
@@ -40,6 +43,8 @@ export class ProfilePage implements OnInit {
 
   readonly photo = signal('');
   readonly busy = signal(false);
+  /** Spinner until the profile photo is loaded. */
+  readonly loading = signal(true);
   readonly error = signal('');
   readonly done = signal('');
   readonly name = signal('');
@@ -53,6 +58,7 @@ export class ProfilePage implements OnInit {
     this.hideOnline.set(!!u?.['hide_online']);
     this.comm.startPresence();
     await this.refresh();
+    this.loading.set(false);
   }
 
   private async refresh(): Promise<void> {
@@ -88,7 +94,7 @@ export class ProfilePage implements OnInit {
   }
 
   appThemeName(id: AppTheme): string {
-    return this.tx()[('app_' + id) as 'app_classic'];
+    return THEME_NAMES[this.i18n.lang()][id] ?? id;
   }
 
   async setAppTheme(t: AppTheme): Promise<void> {
@@ -96,6 +102,18 @@ export class ProfilePage implements OnInit {
     this.error.set('');
     try {
       await this.appTheme.set(t);
+    } catch (e) {
+      this.error.set(this.i18n.err(e));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  async resetAppTheme(): Promise<void> {
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      await this.appTheme.reset();
     } catch (e) {
       this.error.set(this.i18n.err(e));
     } finally {

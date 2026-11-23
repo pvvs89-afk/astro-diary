@@ -84,6 +84,7 @@ const LAST_KEY = 'astro.lastAstrologer';
   ],
   templateUrl: './messages.page.html',
   host: {
+    '[class.theme-app]': "comm.chatTheme() === 'app'",
     '[class.theme-clean]': "comm.chatTheme() === 'clean'",
     '[class.theme-lavender]': "comm.chatTheme() === 'lavender'",
     '[class.theme-saffron]': "comm.chatTheme() === 'saffron'",

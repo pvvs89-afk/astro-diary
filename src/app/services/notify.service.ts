@@ -4,6 +4,7 @@ import { ToastController } from '@ionic/angular';
 import { RecordModel } from 'pocketbase';
 import { I18nService } from '../i18n/i18n.service';
 import { NOTIFY_TEXT } from '../notify/notify-text';
+import { NOTIFY_KIND_NAMES, notifyKind } from '../notify/notify-kinds';
 import { PbService } from './pb.service';
 
 /**
@@ -77,12 +78,15 @@ export class NotifyService {
 
   private async popup(n: RecordModel): Promise<void> {
     const tx = NOTIFY_TEXT[this.i18n.lang()];
+    const k = notifyKind(n['kind']);
     const toast = await this.toasts.create({
-      header: String(n['title'] || tx.n_new),
+      // Coloured by type (styles in theme/variables.scss: .nk-toast.nk-<type>)
+      cssClass: ['nk-toast', 'nk-' + k.id],
+      header: NOTIFY_KIND_NAMES[this.i18n.lang()][k.id] + ' · ' + String(n['title'] || tx.n_new),
       message: String(n['body'] ?? '').slice(0, 140),
-      duration: 6000,
+      duration: k.id === 'alert' ? 10000 : 6000,
       position: 'top',
-      icon: 'notifications',
+      icon: k.icon,
       buttons: [{ text: tx.n_open, handler: () => void this.router.navigateByUrl('/notifications') }],
     });
     await toast.present();

@@ -1,89 +1,562 @@
-// Astro Diary app themes, chosen by each person in the app (the phone's dark/light
-// mode is ignored). The app puts one class on <html>:
-//   (none)              Classic navy - default
-//   app-theme-lavender  Soft lavender
-//   app-theme-saffron   Warm saffron
-//   app-theme-dark      Dark (together with Ionic's ion-palette-dark class)
-// This file loads after Ionic's palettes, so these values win.
+// Astro Diary customer app themes, chosen by each customer in My Profile (the phone's
+// dark/light mode is ignored). The app puts one class on <html>: app-theme-sunrise
+// (default), -cosmic, -saffron, -pastel, -emerald, -rose or -ocean; the dark ones also get
+// Ionic's ion-palette-dark class. This file loads after Ionic's palettes, so these win.
+//
+// Besides Ionic's colours each theme sets Astro Diary's own design values, used by
+// the Home screen, cards and tabs:
+//   --ad-head-font, --ad-card, --ad-card2, --ad-line, --ad-accent2, --ad-good,
+//   --ad-banner, --ad-banner-ink, --ad-tile1 … --ad-tile6, --ad-sky (page background)
 
 :root {
   color-scheme: light;
-  --ion-color-primary: #13245e;
-  --ion-color-primary-rgb: 19, 36, 94;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #112053;
-  --ion-color-primary-tint: #2b3a6e;
+}
+// Fonts (all themes): Plus Jakarta Sans for text; Hindi, Tamil, Telugu and Malayalam
+// letters come from the matching Baloo font, so every language looks rounded and friendly.
+:root {
+  --ad-body-font: 'Plus Jakarta Sans', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, ion-title, .ad-head {
+  letter-spacing: 0.01em;
+}
+ion-title {
+  font-weight: 700;
+}
+// Buttons in normal case (not ALL CAPS), a little bolder.
+ion-button {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+}
+h1, h2, h3, ion-title, .ad-head {
+  font-family: var(--ad-head-font, inherit);
+}
+// Full-page "Loading…" spinner, shown until a page's data is in.
+.page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
+.page-loading ion-spinner {
+  width: 40px;
+  height: 40px;
+  color: var(--ion-color-primary);
+}
+.wrap.is-loading {
+  display: none;
+}
+.ad-sky {
+  --background: var(--ad-sky, var(--ion-background-color));
+}
 
-  --ion-color-secondary: #2563eb;
-  --ion-color-secondary-rgb: 37, 99, 235;
+// Sunrise Orange (default)
+:root.app-theme-sunrise, :root.app-theme-sunrise.md, :root.app-theme-sunrise.ios {
+  color-scheme: light;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ion-background-color: #FFF5EB;
+  --ion-background-color-rgb: 255, 245, 235;
+  --ion-text-color: #3A1D08;
+  --ion-text-color-rgb: 58, 29, 8;
+  --ion-item-background: #FFF5EB;
+  --ion-card-background: #FFFFFF;
+  --ion-toolbar-background: #D9580B;
+  --ion-tab-bar-background: #FFFFFF;
+  --ion-color-primary: #D9580B;
+  --ion-color-primary-rgb: 217, 88, 11;
+  --ion-color-primary-contrast: #FFFFFF;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #bf4d0a;
+  --ion-color-primary-tint: #dd6923;
+  --ion-color-secondary: #FFA62B;
+  --ion-color-secondary-rgb: 255, 166, 43;
+  --ion-color-secondary-contrast: #3A1D08;
+  --ion-color-secondary-contrast-rgb: 58, 29, 8;
+  --ion-color-secondary-shade: #e09226;
+  --ion-color-secondary-tint: #ffaf40;
+  --ion-color-light: #FFFFFF;
+  --ion-color-light-rgb: 255, 255, 255;
+  --ion-color-light-contrast: #3A1D08;
+  --ion-color-light-contrast-rgb: 58, 29, 8;
+  --ion-color-light-shade: #ebebeb;
+  --ion-color-light-tint: #ffffff;
+  --ion-color-medium: #82593A;
+  --ion-color-medium-rgb: 130, 89, 58;
+  --ion-color-medium-shade: #724e33;
+  --ad-card: #FFFFFF;
+  --ad-card2: #FFE8D1;
+  --ad-line: rgba(217,88,11,0.14);
+  --ad-accent2: #FFA62B;
+  --ad-good: #1F7A4D;
+  --ad-banner: linear-gradient(120deg, #F26B1D 0%, #FF9A3C 60%, #FFC15E 100%);
+  --ad-banner-ink: #FFFFFF;
+  --ad-tile1: #F26B1D;
+  --ad-tile2: #1F7A4D;
+  --ad-tile3: #C0392B;
+  --ad-tile4: #D81B60;
+  --ad-tile5: #E0A100;
+  --ad-tile6: #6A4BC4;
+  --ad-sky: radial-gradient(120% 60% at 50% -10%, #FFD9B0 0%, rgba(255,217,176,0) 70%), #FFF5EB;
+}
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-sunrise ion-toolbar.ion-color-primary {
+  --ion-color-base: #D9580B !important;
+  --ion-color-contrast: #FFFFFF !important;
+}
+
+// Cosmic Night
+:root.app-theme-cosmic, :root.app-theme-cosmic.md, :root.app-theme-cosmic.ios {
+  color-scheme: dark;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ion-background-color: #0D0A2B;
+  --ion-background-color-rgb: 13, 10, 43;
+  --ion-text-color: #F5F1FF;
+  --ion-text-color-rgb: 245, 241, 255;
+  --ion-item-background: #0D0A2B;
+  --ion-card-background: #1D1752;
+  --ion-toolbar-background: #120E36;
+  --ion-tab-bar-background: #1D1752;
+  --ion-color-primary: #F2C14E;
+  --ion-color-primary-rgb: 242, 193, 78;
+  --ion-color-primary-contrast: #1A1340;
+  --ion-color-primary-contrast-rgb: 26, 19, 64;
+  --ion-color-primary-shade: #d5aa45;
+  --ion-color-primary-tint: #f3c760;
+  --ion-color-secondary: #8B7CFF;
+  --ion-color-secondary-rgb: 139, 124, 255;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #2157cf;
-  --ion-color-secondary-tint: #3b73ed;
+  --ion-color-secondary-shade: #7a6de0;
+  --ion-color-secondary-tint: #9789ff;
+  --ion-color-light: #1D1752;
+  --ion-color-light-rgb: 29, 23, 82;
+  --ion-color-light-contrast: #F5F1FF;
+  --ion-color-light-contrast-rgb: 245, 241, 255;
+  --ion-color-light-shade: #1b154b;
+  --ion-color-light-tint: #2b255c;
+  --ion-color-medium: #B7AFDC;
+  --ion-color-medium-rgb: 183, 175, 220;
+  --ion-color-medium-shade: #c2bbe1;
+  --ad-card: #1D1752;
+  --ad-card2: #251E63;
+  --ad-line: rgba(255,255,255,0.10);
+  --ad-accent2: #8B7CFF;
+  --ad-good: #6EE7A8;
+  --ad-banner: #251E63;
+  --ad-banner-ink: #F5F1FF;
+  --ad-tile1: #7C6CFF;
+  --ad-tile2: #2FBF71;
+  --ad-tile3: #E0A100;
+  --ad-tile4: #FF7AA8;
+  --ad-tile5: #4FB3FF;
+  --ad-tile6: #FF9F45;
+  --ad-sky: radial-gradient(1.5px 1.5px at 20px 30px, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 90px 120px, rgba(255,255,255,0.5), transparent), radial-gradient(1.2px 1.2px at 160px 50px, rgba(255,255,255,0.6), transparent), radial-gradient(1px 1px at 210px 170px, rgba(255,255,255,0.45), transparent), radial-gradient(1.4px 1.4px at 60px 200px, rgba(255,255,255,0.55), transparent), radial-gradient(1px 1px at 140px 230px, rgba(255,255,255,0.4), transparent) 0 0 / 240px 260px, #0D0A2B;
+}
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-cosmic ion-toolbar.ion-color-primary {
+  --ion-color-base: #120E36 !important;
+  --ion-color-contrast: #F5F1FF !important;
 }
 
-// Soft lavender: purple bars and buttons, faint lavender page.
-:root.app-theme-lavender {
-  --ion-color-primary: #534ab7;
-  --ion-color-primary-rgb: 83, 74, 183;
-  --ion-color-primary-contrast: #ffffff;
+// Saffron Sunrise
+:root.app-theme-saffron, :root.app-theme-saffron.md, :root.app-theme-saffron.ios {
+  color-scheme: light;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ion-background-color: #FFF7EC;
+  --ion-background-color-rgb: 255, 247, 236;
+  --ion-text-color: #3B1020;
+  --ion-text-color-rgb: 59, 16, 32;
+  --ion-item-background: #FFF7EC;
+  --ion-card-background: #FFFFFF;
+  --ion-toolbar-background: #7A1F3D;
+  --ion-tab-bar-background: #FFFFFF;
+  --ion-color-primary: #7A1F3D;
+  --ion-color-primary-rgb: 122, 31, 61;
+  --ion-color-primary-contrast: #FFFFFF;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #4941a1;
-  --ion-color-primary-tint: #645cbe;
-  --ion-color-secondary: #1d9e75;
-  --ion-color-secondary-rgb: 29, 158, 117;
-  --ion-color-secondary-shade: #1a8b67;
-  --ion-color-secondary-tint: #34a883;
+  --ion-color-primary-shade: #6b1b36;
+  --ion-color-primary-tint: #873550;
+  --ion-color-secondary: #E8641B;
+  --ion-color-secondary-rgb: 232, 100, 27;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #cc5818;
+  --ion-color-secondary-tint: #ea7432;
+  --ion-color-light: #FFFFFF;
+  --ion-color-light-rgb: 255, 255, 255;
+  --ion-color-light-contrast: #3B1020;
+  --ion-color-light-contrast-rgb: 59, 16, 32;
+  --ion-color-light-shade: #ebebeb;
+  --ion-color-light-tint: #ffffff;
+  --ion-color-medium: #7D5A4E;
+  --ion-color-medium-rgb: 125, 90, 78;
+  --ion-color-medium-shade: #6a4c42;
+  --ad-card: #FFFFFF;
+  --ad-card2: #FFF1DE;
+  --ad-line: rgba(122,31,61,0.12);
+  --ad-accent2: #E8641B;
+  --ad-good: #1F7A4D;
+  --ad-banner: #E8641B;
+  --ad-banner-ink: #FFFFFF;
+  --ad-tile1: #E8641B;
+  --ad-tile2: #1F7A4D;
+  --ad-tile3: #7A1F3D;
+  --ad-tile4: #C2185B;
+  --ad-tile5: #B7791F;
+  --ad-tile6: #5B3FA8;
+  --ad-sky: #FFF7EC;
 }
-:root.app-theme-lavender.md,
-:root.app-theme-lavender.ios {
-  --ion-background-color: #faf9ff;
-  --ion-background-color-rgb: 250, 249, 255;
-  --ion-item-background: #faf9ff;
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-saffron ion-toolbar.ion-color-primary {
+  --ion-color-base: #7A1F3D !important;
+  --ion-color-contrast: #FFFFFF !important;
 }
 
-// Warm saffron: maroon bars and buttons, cream page.
-:root.app-theme-saffron {
-  --ion-color-primary: #993c1d;
-  --ion-color-primary-rgb: 153, 60, 29;
-  --ion-color-primary-contrast: #ffffff;
+// Celestial Pastel
+:root.app-theme-pastel, :root.app-theme-pastel.md, :root.app-theme-pastel.ios {
+  color-scheme: light;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+  --ion-background-color: #F6F2FF;
+  --ion-background-color-rgb: 246, 242, 255;
+  --ion-text-color: #231942;
+  --ion-text-color-rgb: 35, 25, 66;
+  --ion-item-background: #F6F2FF;
+  --ion-card-background: #FFFFFF;
+  --ion-toolbar-background: #6D4AFF;
+  --ion-tab-bar-background: #FFFFFF;
+  --ion-color-primary: #6D4AFF;
+  --ion-color-primary-rgb: 109, 74, 255;
+  --ion-color-primary-contrast: #FFFFFF;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #87351a;
-  --ion-color-primary-tint: #a35034;
-  --ion-color-secondary: #ba7517;
-  --ion-color-secondary-rgb: 186, 117, 23;
-  --ion-color-secondary-shade: #a46714;
-  --ion-color-secondary-tint: #c1832e;
+  --ion-color-primary-shade: #6041e0;
+  --ion-color-primary-tint: #7c5cff;
+  --ion-color-secondary: #FF5C8A;
+  --ion-color-secondary-rgb: 255, 92, 138;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #e05179;
+  --ion-color-secondary-tint: #ff6c96;
+  --ion-color-light: #FFFFFF;
+  --ion-color-light-rgb: 255, 255, 255;
+  --ion-color-light-contrast: #231942;
+  --ion-color-light-contrast-rgb: 35, 25, 66;
+  --ion-color-light-shade: #ebebeb;
+  --ion-color-light-tint: #ffffff;
+  --ion-color-medium: #6B6290;
+  --ion-color-medium-rgb: 107, 98, 144;
+  --ion-color-medium-shade: #5b537a;
+  --ad-card: #FFFFFF;
+  --ad-card2: #F0E9FF;
+  --ad-line: rgba(35,25,66,0.08);
+  --ad-accent2: #FF5C8A;
+  --ad-good: #0F8A5F;
+  --ad-banner: #FF5C8A;
+  --ad-banner-ink: #FFFFFF;
+  --ad-tile1: #6D4AFF;
+  --ad-tile2: #11A36B;
+  --ad-tile3: #FF8A3D;
+  --ad-tile4: #FF5C8A;
+  --ad-tile5: #2F8CFF;
+  --ad-tile6: #9B5CFF;
+  --ad-sky: #F6F2FF;
 }
-:root.app-theme-saffron.md,
-:root.app-theme-saffron.ios {
-  --ion-background-color: #fffbf3;
-  --ion-background-color-rgb: 255, 251, 243;
-  --ion-item-background: #fffbf3;
-  --ion-card-background: #ffffff;
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-pastel ion-toolbar.ion-color-primary {
+  --ion-color-base: #6D4AFF !important;
+  --ion-color-contrast: #FFFFFF !important;
 }
 
-// Dark: light-blue bars/buttons on deep navy (matches the logo).
-:root.app-theme-dark {
+// Emerald Temple
+:root.app-theme-emerald, :root.app-theme-emerald.md, :root.app-theme-emerald.ios {
   color-scheme: dark;
-  --ion-color-primary: #9db4ff;
-  --ion-color-primary-rgb: 157, 180, 255;
-  --ion-color-primary-contrast: #0b1438;
-  --ion-color-primary-contrast-rgb: 11, 20, 56;
-  --ion-color-primary-shade: #8a9ee0;
-  --ion-color-primary-tint: #a7bcff;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ion-background-color: #0A231E;
+  --ion-background-color-rgb: 10, 35, 30;
+  --ion-text-color: #F1FAF5;
+  --ion-text-color-rgb: 241, 250, 245;
+  --ion-item-background: #0A231E;
+  --ion-card-background: #123A31;
+  --ion-toolbar-background: #0E2D26;
+  --ion-tab-bar-background: #123A31;
+  --ion-color-primary: #E9C46A;
+  --ion-color-primary-rgb: 233, 196, 106;
+  --ion-color-primary-contrast: #0A231E;
+  --ion-color-primary-contrast-rgb: 10, 35, 30;
+  --ion-color-primary-shade: #cdac5d;
+  --ion-color-primary-tint: #ebca79;
+  --ion-color-secondary: #5FD4A4;
+  --ion-color-secondary-rgb: 95, 212, 164;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #54bb90;
+  --ion-color-secondary-tint: #6fd8ad;
+  --ion-color-light: #123A31;
+  --ion-color-light-rgb: 18, 58, 49;
+  --ion-color-light-contrast: #F1FAF5;
+  --ion-color-light-contrast-rgb: 241, 250, 245;
+  --ion-color-light-shade: #11352d;
+  --ion-color-light-tint: #20463d;
+  --ion-color-medium: #A9CBBE;
+  --ion-color-medium-rgb: 169, 203, 190;
+  --ion-color-medium-shade: #b6d3c8;
+  --ad-card: #123A31;
+  --ad-card2: #174A3E;
+  --ad-line: rgba(255,255,255,0.10);
+  --ad-accent2: #5FD4A4;
+  --ad-good: #7BE0A9;
+  --ad-banner: #174A3E;
+  --ad-banner-ink: #F1FAF5;
+  --ad-tile1: #2A9D8F;
+  --ad-tile2: #E9C46A;
+  --ad-tile3: #F4A261;
+  --ad-tile4: #E76F51;
+  --ad-tile5: #5FA8D3;
+  --ad-tile6: #B388EB;
+  --ad-sky: radial-gradient(1.5px 1.5px at 20px 30px, rgba(255,255,255,0.7), transparent), radial-gradient(1px 1px at 90px 120px, rgba(255,255,255,0.5), transparent), radial-gradient(1.2px 1.2px at 160px 50px, rgba(255,255,255,0.6), transparent), radial-gradient(1px 1px at 210px 170px, rgba(255,255,255,0.45), transparent), radial-gradient(1.4px 1.4px at 60px 200px, rgba(255,255,255,0.55), transparent), radial-gradient(1px 1px at 140px 230px, rgba(255,255,255,0.4), transparent) 0 0 / 240px 260px, #0A231E;
 }
-:root.app-theme-dark.md,
-:root.app-theme-dark.ios {
-  --ion-background-color: #070d26;
-  --ion-background-color-rgb: 7, 13, 38;
-  --ion-toolbar-background: #0b1438;
-  --ion-item-background: #0b1438;
-  --ion-card-background: #0e1942;
-  --ion-tab-bar-background: #0b1438;
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-emerald ion-toolbar.ion-color-primary {
+  --ion-color-base: #0E2D26 !important;
+  --ion-color-contrast: #F1FAF5 !important;
 }
 
+// Rose Moon
+:root.app-theme-rose, :root.app-theme-rose.md, :root.app-theme-rose.ios {
+  color-scheme: light;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Playfair Display', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ion-background-color: #FFF4F6;
+  --ion-background-color-rgb: 255, 244, 246;
+  --ion-text-color: #3A1030;
+  --ion-text-color-rgb: 58, 16, 48;
+  --ion-item-background: #FFF4F6;
+  --ion-card-background: #FFFFFF;
+  --ion-toolbar-background: #8E2C5A;
+  --ion-tab-bar-background: #FFFFFF;
+  --ion-color-primary: #8E2C5A;
+  --ion-color-primary-rgb: 142, 44, 90;
+  --ion-color-primary-contrast: #FFFFFF;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #7d274f;
+  --ion-color-primary-tint: #99416a;
+  --ion-color-secondary: #E85D8E;
+  --ion-color-secondary-rgb: 232, 93, 142;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #cc527d;
+  --ion-color-secondary-tint: #ea6d99;
+  --ion-color-light: #FFFFFF;
+  --ion-color-light-rgb: 255, 255, 255;
+  --ion-color-light-contrast: #3A1030;
+  --ion-color-light-contrast-rgb: 58, 16, 48;
+  --ion-color-light-shade: #ebebeb;
+  --ion-color-light-tint: #ffffff;
+  --ion-color-medium: #7A5468;
+  --ion-color-medium-rgb: 122, 84, 104;
+  --ion-color-medium-shade: #684758;
+  --ad-card: #FFFFFF;
+  --ad-card2: #FFE6EC;
+  --ad-line: rgba(142,44,90,0.12);
+  --ad-accent2: #E85D8E;
+  --ad-good: #1F7A4D;
+  --ad-banner: #8E2C5A;
+  --ad-banner-ink: #FFFFFF;
+  --ad-tile1: #E85D8E;
+  --ad-tile2: #1F7A4D;
+  --ad-tile3: #8E2C5A;
+  --ad-tile4: #F08A5D;
+  --ad-tile5: #6A5ACD;
+  --ad-tile6: #C2185B;
+  --ad-sky: #FFF4F6;
+}
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-rose ion-toolbar.ion-color-primary {
+  --ion-color-base: #8E2C5A !important;
+  --ion-color-contrast: #FFFFFF !important;
+}
+
+// Ocean Zodiac
+:root.app-theme-ocean, :root.app-theme-ocean.md, :root.app-theme-ocean.ios {
+  color-scheme: light;
+  --ion-font-family: var(--ad-body-font);
+  --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+  --ion-background-color: #EFFAFB;
+  --ion-background-color-rgb: 239, 250, 251;
+  --ion-text-color: #0E2A30;
+  --ion-text-color-rgb: 14, 42, 48;
+  --ion-item-background: #EFFAFB;
+  --ion-card-background: #FFFFFF;
+  --ion-toolbar-background: #0E7C86;
+  --ion-tab-bar-background: #FFFFFF;
+  --ion-color-primary: #0E7C86;
+  --ion-color-primary-rgb: 14, 124, 134;
+  --ion-color-primary-contrast: #FFFFFF;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0c6d76;
+  --ion-color-primary-tint: #268992;
+  --ion-color-secondary: #FF7A59;
+  --ion-color-secondary-rgb: 255, 122, 89;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #e06b4e;
+  --ion-color-secondary-tint: #ff876a;
+  --ion-color-light: #FFFFFF;
+  --ion-color-light-rgb: 255, 255, 255;
+  --ion-color-light-contrast: #0E2A30;
+  --ion-color-light-contrast-rgb: 14, 42, 48;
+  --ion-color-light-shade: #ebebeb;
+  --ion-color-light-tint: #ffffff;
+  --ion-color-medium: #4F6B70;
+  --ion-color-medium-rgb: 79, 107, 112;
+  --ion-color-medium-shade: #435b5f;
+  --ad-card: #FFFFFF;
+  --ad-card2: #DDF3F5;
+  --ad-line: rgba(14,124,134,0.14);
+  --ad-accent2: #FF7A59;
+  --ad-good: #147A4F;
+  --ad-banner: #FF7A59;
+  --ad-banner-ink: #FFFFFF;
+  --ad-tile1: #0E7C86;
+  --ad-tile2: #FF7A59;
+  --ad-tile3: #2F8CFF;
+  --ad-tile4: #F2B705;
+  --ad-tile5: #7C5CFF;
+  --ad-tile6: #13A36B;
+  --ad-sky: #EFFAFB;
+}
+// Bars: theme colour with readable text (on dark themes the accent is for buttons only).
+:root.app-theme-ocean ion-toolbar.ion-color-primary {
+  --ion-color-base: #0E7C86 !important;
+  --ion-color-contrast: #FFFFFF !important;
+}
+
+// ---------------------------------------------------------------------------
+// Glossy icons (customer app and admin panel, every theme).
+//  - Side menu: each icon sits in a small glossy coloured tile (32px, glyph 18px).
+//  - Bottom tabs: 23px icons; the open tab's icon gets a soft pill.
+//  - Toolbars: 22-24px icons. Call buttons get a light shine.
+// Colours come from the theme (--ad-tile1..6), so they change with the theme.
+// ---------------------------------------------------------------------------
+ion-menu ion-item > ion-icon[slot="start"] {
+  --ic: var(--ion-color-primary);
+  box-sizing: content-box;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  padding: 7px;
+  border-radius: 11px;
+  margin-inline-end: 14px !important;
+  color: #ffffff !important;
+  background:
+    radial-gradient(120% 90% at 28% 12%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(160deg, color-mix(in srgb, var(--ic) 78%, #ffffff), var(--ic) 55%, color-mix(in srgb, var(--ic) 80%, #000000));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.12),
+    0 3px 8px color-mix(in srgb, var(--ic) 32%, transparent);
+}
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="home"], [name^="grid"], [name^="list"], [name^="create"]) { --ic: var(--ad-tile1, #e8641b); }
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="chatbubble"], [name^="repeat"]) { --ic: var(--ad-tile2, #1f7a4d); }
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="wallet"], [name^="card"], [name^="pricetags"], [name^="server"]) { --ic: var(--ad-tile3, #7a1f3d); }
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="heart"], [name^="notifications"]) { --ic: var(--ad-tile4, #c2185b); }
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="planet"], [name^="star"], [name^="flash"]) { --ic: var(--ad-tile5, #b7791f); }
+ion-menu ion-item > ion-icon[slot="start"]:is([name^="people"], [name^="person"]) { --ic: var(--ad-tile6, #5b3fa8); }
+ion-menu ion-item > ion-icon[slot="start"][name^="log-out"] { --ic: var(--ion-color-danger, #c5000f); }
+// Sub-menu items: a little smaller.
+ion-menu .submenu ion-item > ion-icon[slot="start"] {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  padding: 6px;
+  border-radius: 9px;
+}
+
+// Bottom tab bars (customer app; admin panel on phones).
+.tabbar a ion-icon {
+  box-sizing: content-box;
+  font-size: 23px;
+  width: 23px;
+  height: 23px;
+  padding: 3px 14px;
+  border-radius: 14px;
+  transition: background 0.2s, transform 0.2s;
+}
+.tabbar a.on ion-icon {
+  background: linear-gradient(180deg, rgba(var(--ion-color-primary-rgb), 0.22), rgba(var(--ion-color-primary-rgb), 0.1));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.tabbar .center-tab .bubble {
+  width: 50px !important;
+  height: 50px !important;
+  background:
+    radial-gradient(110% 80% at 30% 15%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(160deg, var(--ion-color-primary-tint), var(--ion-color-primary) 55%, var(--ion-color-primary-shade)) !important;
+  border: 3px solid var(--ion-background-color, #fff);
+  box-shadow: 0 6px 16px rgba(var(--ion-color-primary-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+.tabbar .center-tab .bubble ion-icon {
+  font-size: 23px;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+// Toolbars: even, comfortable sizes.
+ion-toolbar ion-button ion-icon[slot="icon-only"] {
+  font-size: 22px;
+}
+ion-menu-button::part(icon),
+ion-back-button::part(icon) {
+  font-size: 24px;
+}
+
+// Call buttons: a light shine on top.
+.tb-call::part(native),
+.callbtn {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+// Notification pop-ups, coloured by type (info, good news, reminder, warning, urgent,
+// offer, festival). Set by NotifyService.
+ion-toast.nk-toast {
+  --k: #2563EB;
+  --max-width: 420px;
+  --width: calc(100% - 24px);
+  --background: color-mix(in srgb, var(--k) 10%, #ffffff);
+  --color: #1f1f1f;
+  --border-radius: 14px;
+  --box-shadow: 0 8px 24px color-mix(in srgb, var(--k) 30%, transparent);
+  --button-color: var(--k);
+}
+ion-toast.nk-toast::part(container) { border: 1px solid color-mix(in srgb, var(--k) 30%, transparent); border-radius: 14px; padding: 2px 4px; min-height: 0; }
+ion-toast.nk-toast::part(message) { font-size: 13px; line-height: 1.35; }
+ion-toast.nk-toast::part(icon) { color: var(--k); font-size: 20px; }
+ion-toast.nk-toast::part(header) { font-size: 13.5px; font-weight: 700; color: var(--k); }
+ion-toast.nk-info { --k: #2563EB; }
+ion-toast.nk-success { --k: #16A34A; }
+ion-toast.nk-reminder { --k: #0891B2; }
+ion-toast.nk-warning { --k: #D97706; }
+ion-toast.nk-alert { --k: #DC2626; --background: color-mix(in srgb, #DC2626 14%, #ffffff); }
+ion-toast.nk-offer { --k: #DB2777; }
+ion-toast.nk-festival { --k: #7C3AED; --background: linear-gradient(120deg, color-mix(in srgb, #7C3AED 12%, #fff), color-mix(in srgb, #F59E0B 14%, #fff)); }
 
 // ---------------------------------------------------------------------------
 // Astro Diary icon font: the emblem as a font character (U+E900).
@@ -126,7 +599,7 @@
 // Emblem next to a toolbar title
 .title-icon {
   font-size: 40px;
-  color: var(--ion-color-primary-contrast, #ffffff);
+  color: inherit; // the bar's text colour, so it shows on every theme
   margin-right: 8px;
   margin-top: -4px;
 }

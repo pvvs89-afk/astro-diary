@@ -65,6 +65,11 @@ const en = {
   wallet_note: 'Chats and calls will be charged per minute from your wallet.',
   history: 'Transactions',
   no_history: 'No transactions yet.',
+  talk_now: 'Talk to an astrologer now',
+  talk_sub: '{n} online now · Chat or call',
+  talk_sub0: 'Chat or call · they reply when online',
+  live_title: 'Live astrologers',
+  our_astros: 'Our astrologers',
 };
 export type StartKey = keyof typeof en;
 
@@ -107,6 +112,11 @@ export const START_TEXT: Record<LangCode, Record<StartKey, string>> = {
     wallet_note: 'चैट और कॉल का शुल्क आपके वॉलेट से प्रति मिनट कटेगा।',
     history: 'लेन-देन',
     no_history: 'अभी कोई लेन-देन नहीं।',
+    talk_now: 'अभी ज्योतिषी से बात करें',
+    talk_sub: '{n} अभी ऑनलाइन · चैट या कॉल',
+    talk_sub0: 'चैट या कॉल · ऑनलाइन होते ही जवाब',
+    live_title: 'लाइव ज्योतिषी',
+    our_astros: 'हमारे ज्योतिषी',
   },
   ta: {
     tab_home: 'முகப்பு', tab_astro: 'ஜோதிடர்கள்', tab_chat: 'அரட்டை', tab_kundli: 'ஜாதகம்', tab_profile: 'சுயவிவரம்',
@@ -145,6 +155,11 @@ export const START_TEXT: Record<LangCode, Record<StartKey, string>> = {
     wallet_note: 'அரட்டை மற்றும் அழைப்புகளுக்கு உங்கள் வாலட்டிலிருந்து நிமிடக் கட்டணம் எடுக்கப்படும்.',
     history: 'பரிவர்த்தனைகள்',
     no_history: 'இன்னும் பரிவர்த்தனைகள் இல்லை.',
+    talk_now: 'இப்போதே ஜோதிடருடன் பேசுங்கள்',
+    talk_sub: '{n} இப்போது ஆன்லைன் · அரட்டை அல்லது அழைப்பு',
+    talk_sub0: 'அரட்டை அல்லது அழைப்பு · ஆன்லைனில் வந்ததும் பதில்',
+    live_title: 'நேரலை ஜோதிடர்கள்',
+    our_astros: 'எங்கள் ஜோதிடர்கள்',
   },
   te: {
     tab_home: 'హోమ్', tab_astro: 'జ్యోతిష్కులు', tab_chat: 'చాట్', tab_kundli: 'జాతకం', tab_profile: 'ప్రొఫైల్',
@@ -183,6 +198,11 @@ export const START_TEXT: Record<LangCode, Record<StartKey, string>> = {
     wallet_note: 'చాట్‌లు మరియు కాల్‌లకు మీ వాలెట్ నుండి నిమిషానికి ఛార్జ్ అవుతుంది.',
     history: 'లావాదేవీలు',
     no_history: 'ఇంకా లావాదేవీలు లేవు.',
+    talk_now: 'ఇప్పుడే జ్యోతిష్కుడితో మాట్లాడండి',
+    talk_sub: '{n} ఇప్పుడు ఆన్‌లైన్ · చాట్ లేదా కాల్',
+    talk_sub0: 'చాట్ లేదా కాల్ · ఆన్‌లైన్‌కి రాగానే జవాబు',
+    live_title: 'లైవ్ జ్యోతిష్కులు',
+    our_astros: 'మా జ్యోతిష్కులు',
   },
   ml: {
     tab_home: 'ഹോം', tab_astro: 'ജ്യോതിഷികൾ', tab_chat: 'ചാറ്റ്', tab_kundli: 'ജാതകം', tab_profile: 'പ്രൊഫൈൽ',
@@ -221,6 +241,11 @@ export const START_TEXT: Record<LangCode, Record<StartKey, string>> = {
     wallet_note: 'ചാറ്റുകൾക്കും കോളുകൾക്കും നിങ്ങളുടെ വാലറ്റിൽ നിന്ന് മിനിറ്റിന് തുക ഈടാക്കും.',
     history: 'ഇടപാടുകൾ',
     no_history: 'ഇതുവരെ ഇടപാടുകളില്ല.',
+    talk_now: 'ഇപ്പോൾ ജ്യോതിഷിയുമായി സംസാരിക്കൂ',
+    talk_sub: '{n} പേർ ഇപ്പോൾ ഓൺലൈനിൽ · ചാറ്റ് അല്ലെങ്കിൽ കോൾ',
+    talk_sub0: 'ചാറ്റ് അല്ലെങ്കിൽ കോൾ · ഓൺലൈനിൽ വന്നാൽ മറുപടി',
+    live_title: 'ലൈവ് ജ്യോതിഷികൾ',
+    our_astros: 'ഞങ്ങളുടെ ജ്യോതിഷികൾ',
   },
 };
 
@@ -242,3 +267,21 @@ export const ASTRO_LANG_NAMES: Record<string, string> = {
 export function fillText(text: string, vars: Record<string, string | number>): string {
   return text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
 }
+
+/** App theme names (My Profile) in the 5 app languages. */
+export const THEME_NAMES: Record<LangCode, Record<string, string>> = {
+  en: { sunrise: 'Sunrise Orange', cosmic: 'Cosmic Night', saffron: 'Saffron Sunrise', pastel: 'Celestial Pastel', emerald: 'Emerald Temple', rose: 'Rose Moon', ocean: 'Ocean Zodiac' },
+  hi: { sunrise: 'सूर्योदय नारंगी', cosmic: 'कॉस्मिक नाइट', saffron: 'केसरिया सूर्योदय', pastel: 'आकाशीय पेस्टल', emerald: 'पन्ना मंदिर', rose: 'गुलाबी चाँद', ocean: 'सागर राशि' },
+  ta: { sunrise: 'சூரியோதய ஆரஞ்சு', cosmic: 'காஸ்மிக் இரவு', saffron: 'குங்கும சூரியோதயம்', pastel: 'வான பேஸ்டல்', emerald: 'மரகதக் கோயில்', rose: 'ரோஜா நிலவு', ocean: 'கடல் ராசி' },
+  te: { sunrise: 'సూర్యోదయ నారింజ', cosmic: 'కాస్మిక్ రాత్రి', saffron: 'కుంకుమ సూర్యోదయం', pastel: 'ఆకాశ పాస్టెల్', emerald: 'పచ్చ దేవాలయం', rose: 'గులాబీ చంద్రుడు', ocean: 'సముద్ర రాశి' },
+  ml: { sunrise: 'സൂര്യോദയ ഓറഞ്ച്', cosmic: 'കോസ്മിക് രാത്രി', saffron: 'കുങ്കുമ സൂര്യോദയം', pastel: 'ആകാശ പാസ്റ്റൽ', emerald: 'മരതക ക്ഷേത്രം', rose: 'റോസ് ചന്ദ്രൻ', ocean: 'കടൽ രാശി' },
+};
+
+/** "Reset to default" button under the app theme picker (My Profile). */
+export const THEME_RESET: Record<LangCode, string> = {
+  en: 'Reset to default (Sunrise Orange)',
+  hi: 'डिफ़ॉल्ट पर लौटें (सूर्योदय नारंगी)',
+  ta: 'இயல்புநிலைக்கு மாற்று (சூரியோதய ஆரஞ்சு)',
+  te: 'డిఫాల్ట్‌కు మార్చు (సూర్యోదయ నారింజ)',
+  ml: 'ഡിഫോൾട്ടിലേക്ക് മാറ്റുക (സൂര്യോദയ ഓറഞ്ച്)',
+};

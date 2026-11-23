@@ -33,9 +33,6 @@
       <ion-button class="tb-call video" (click)="calls.call('video', staffId())" [disabled]="calls.state() !== 'idle'" [attr.aria-label]="tx().call_video" [title]="tx().call_video">
         <ion-icon slot="icon-only" name="videocam"></ion-icon>
       </ion-button>
-      <ion-button class="tb-plain" (click)="pickTheme()" [attr.aria-label]="tx().prof_theme" [title]="tx().prof_theme">
-        <ion-icon slot="icon-only" name="color-palette-outline"></ion-icon>
-      </ion-button>
       <ion-button class="tb-plain" routerLink="/my-location" [attr.aria-label]="t('location_menu')" [title]="t('location_menu')">
         <ion-icon slot="icon-only" name="location-outline"></ion-icon>
       </ion-button>
