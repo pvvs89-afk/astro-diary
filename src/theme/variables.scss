@@ -592,6 +592,19 @@ ion-toast.nk-festival { --k: #7C3AED; --background: linear-gradient(120deg, colo
   background: linear-gradient(160deg, var(--ion-color-primary-tint) 0%, var(--ion-color-primary) 45%, var(--ion-color-primary-shade) 100%);
 }
 
+// Side menu open on a phone: hide the bottom tab bar, so its icons don't cover the
+// menu (Logout sits at the bottom of the menu).
+ion-app:has(ion-menu.show-menu) .tabbar {
+  display: none !important;
+}
+ion-menu.show-menu {
+  z-index: 1000;
+}
+// Logout stays clear of the phone's home bar / gesture area.
+ion-menu ion-footer {
+  padding-bottom: var(--ion-safe-area-bottom, 0px);
+}
+
 // ---------------------------------------------------------------------------
 // Astro Diary icon font: the emblem as a font character (U+E900).
 // It takes the text colour, so it follows the theme (navy, white, light blue).
