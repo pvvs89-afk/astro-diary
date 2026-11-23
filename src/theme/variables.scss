@@ -13,18 +13,26 @@
 }
 // Phone dark mode must not recolour the app: the theme the person chose decides.
 html, body { forced-color-adjust: none; }
-// Fonts (all themes): Plus Jakarta Sans for text; Hindi, Tamil, Telugu and Malayalam
-// letters come from the matching Baloo font, so every language looks rounded and friendly.
+// Fonts (all themes): Plus Jakarta Sans for text, Cinzel for headings. Hindi, Tamil,
+// Telugu and Malayalam use round, sharp and neat fonts (Poppins for Hindi, Mukta Malar
+// for Tamil, Gidugu for Telugu, Manjari for Malayalam), bolder in headings, which
+// get the same glossy shine.
 :root {
-  --ad-body-font: 'Plus Jakarta Sans', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+  --ad-body-font: 'Plus Jakarta Sans', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', system-ui, sans-serif;
 }
 body {
+  // No fake bold: Gidugu (Telugu) has one weight and already looks bold.
+  font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 h1, h2, h3, ion-title, .ad-head {
   letter-spacing: 0.01em;
+}
+// Bold headings, so Hindi, Tamil, Telugu and Malayalam titles look as strong as English.
+html body h1, html body h2, html body h3 {
+  font-weight: 700;
 }
 ion-title {
   font-weight: 700;
@@ -65,7 +73,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-sunrise, :root.app-theme-sunrise.md, :root.app-theme-sunrise.ios {
   color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #FFF5EB;
   --ion-background-color-rgb: 255, 245, 235;
   --ion-text-color: #3A1D08;
@@ -120,7 +128,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-cosmic, :root.app-theme-cosmic.md, :root.app-theme-cosmic.ios {
   color-scheme: only dark;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #0D0A2B;
   --ion-background-color-rgb: 13, 10, 43;
   --ion-text-color: #F5F1FF;
@@ -175,7 +183,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-saffron, :root.app-theme-saffron.md, :root.app-theme-saffron.ios {
   color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Yeseva One', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #FFF7EC;
   --ion-background-color-rgb: 255, 247, 236;
   --ion-text-color: #3B1020;
@@ -230,7 +238,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-pastel, :root.app-theme-pastel.md, :root.app-theme-pastel.ios {
   color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #F6F2FF;
   --ion-background-color-rgb: 246, 242, 255;
   --ion-text-color: #231942;
@@ -285,7 +293,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-emerald, :root.app-theme-emerald.md, :root.app-theme-emerald.ios {
   color-scheme: only dark;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #0A231E;
   --ion-background-color-rgb: 10, 35, 30;
   --ion-text-color: #F1FAF5;
@@ -340,7 +348,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-rose, :root.app-theme-rose.md, :root.app-theme-rose.ios {
   color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Playfair Display', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', Georgia, serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #FFF4F6;
   --ion-background-color-rgb: 255, 244, 246;
   --ion-text-color: #3A1030;
@@ -395,7 +403,7 @@ h1, h2, h3, ion-title, .ad-head {
 :root.app-theme-ocean, :root.app-theme-ocean.md, :root.app-theme-ocean.ios {
   color-scheme: only light;
   --ion-font-family: var(--ad-body-font);
-  --ad-head-font: 'Outfit', 'Baloo 2', 'Baloo Thambi 2', 'Baloo Tammudu 2', 'Baloo Chettan 2', system-ui, sans-serif;
+  --ad-head-font: 'Cinzel Decorative', 'Cinzel', 'Poppins', 'Mukta Malar', 'Gidugu', 'Manjari', Georgia, serif;
   --ion-background-color: #EFFAFB;
   --ion-background-color-rgb: 239, 250, 251;
   --ion-text-color: #0E2A30;
@@ -603,6 +611,26 @@ ion-menu.show-menu {
 // Logout stays clear of the phone's home bar / gesture area.
 ion-menu ion-footer {
   padding-bottom: var(--ion-safe-area-bottom, 0px);
+}
+
+// Glossy headings (all themes): page headings get a shiny gradient in the theme's
+// main colour (gold on Cosmic Night, orange on Sunrise Orange ...). Bar titles get a
+// soft shine. Headings inside PDF areas stay plain so downloads print correctly.
+:where(h1, h2, h3):not(ion-toolbar *, .pdf-area *, .no-gloss, .no-gloss *) {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--ion-color-primary) 70%, #ffffff) 0%,
+    var(--ion-color-primary) 45%,
+    var(--ion-color-primary-shade) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(var(--ion-color-primary-rgb), 0.18));
+}
+ion-toolbar ion-title,
+ion-toolbar .brand {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.18), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 // ---------------------------------------------------------------------------
