@@ -117,16 +117,44 @@ export class BirthDetailsPage implements OnInit {
     addIcons({ searchOutline, locationOutline, checkmarkCircle, arrowBackOutline });
   }
 
-  /** When changing details, start from what is already saved. */
+  /**
+   * When changing details, start from what is already saved. First time (new
+   * customer): start with today's date, the current time and the current place
+   * (the phone asks for location once; if refused, the place stays empty).
+   * The page shows a spinner until all of this is in.
+   */
   async ngOnInit(): Promise<void> {
+    let b: RecordModel | null = null;
     try {
-      const b = await this.pbs.latestBirthDetails();
-      if (b) this.fill(b);
+      b = await this.pbs.latestBirthDetails();
     } catch {
       /* offline - the form just starts empty */
-    } finally {
-      this.loading.set(false);
     }
+    if (b) {
+      this.fill(b);
+    } else {
+      this.setNow();
+      try {
+        const p = await this.pbs.currentPlace();
+        if (p && !this.selectedPlace() && !this.placeQuery.trim()) this.choosePlace(p);
+      } catch {
+        /* no location - typed by the customer */
+      }
+    }
+    this.loading.set(false);
+  }
+
+  /** Today's date and the current time from this phone. */
+  private setNow(): void {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    this.year = String(d.getFullYear());
+    this.month = pad(d.getMonth() + 1);
+    this.day = pad(d.getDate());
+    const h = d.getHours();
+    this.hour = pad(h % 12 === 0 ? 12 : h % 12);
+    this.minute = pad(d.getMinutes());
+    this.ampm = h < 12 ? 'AM' : 'PM';
   }
 
   private fill(b: RecordModel): void {
