@@ -91,10 +91,48 @@ export function countryName(code: string, lang = 'en'): string {
 }
 
 /** The phone's own country (from its language setting, e.g. "en-US" -> "US"), else India. */
+/** Phone time zone -> country (no permission needed, and right even when the phone language is "English (US)"). */
+const ZONE_COUNTRY: Record<string, string> = {
+  'Asia/Kolkata': 'IN', 'Asia/Calcutta': 'IN',
+  'Europe/London': 'GB', 'Europe/Belfast': 'GB',
+  'Pacific/Auckland': 'NZ', 'Pacific/Chatham': 'NZ',
+  'Asia/Dubai': 'AE', 'Asia/Riyadh': 'SA', 'Asia/Qatar': 'QA', 'Asia/Kuwait': 'KW', 'Asia/Muscat': 'OM', 'Asia/Bahrain': 'BH',
+  'Asia/Singapore': 'SG', 'Asia/Kuala_Lumpur': 'MY', 'Asia/Kuching': 'MY',
+  'Asia/Kathmandu': 'NP', 'Asia/Katmandu': 'NP', 'Asia/Colombo': 'LK', 'Asia/Dhaka': 'BD', 'Asia/Dacca': 'BD',
+  'Indian/Mauritius': 'MU', 'Pacific/Fiji': 'FJ',
+  'Africa/Johannesburg': 'ZA', 'Africa/Nairobi': 'KE', 'Africa/Dar_es_Salaam': 'TZ', 'Africa/Kampala': 'UG', 'Africa/Lagos': 'NG',
+  'Europe/Berlin': 'DE', 'Europe/Paris': 'FR', 'Europe/Amsterdam': 'NL', 'Europe/Dublin': 'IE', 'Europe/Rome': 'IT',
+  'Europe/Madrid': 'ES', 'Atlantic/Canary': 'ES', 'Europe/Brussels': 'BE', 'Europe/Lisbon': 'PT', 'Europe/Vienna': 'AT',
+  'Europe/Helsinki': 'FI', 'Europe/Zurich': 'CH', 'Europe/Stockholm': 'SE', 'Europe/Oslo': 'NO', 'Europe/Copenhagen': 'DK',
+  'Europe/Warsaw': 'PL',
+  'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Shanghai': 'CN', 'Asia/Urumqi': 'CN', 'Asia/Hong_Kong': 'HK', 'Asia/Bangkok': 'TH',
+  'Asia/Jakarta': 'ID', 'Asia/Makassar': 'ID', 'Asia/Jayapura': 'ID', 'Asia/Manila': 'PH', 'Asia/Ho_Chi_Minh': 'VN', 'Asia/Saigon': 'VN',
+  'Asia/Jerusalem': 'IL', 'Asia/Tel_Aviv': 'IL',
+  'America/Port_of_Spain': 'TT', 'America/Guyana': 'GY', 'America/Paramaribo': 'SR', 'America/Jamaica': 'JM',
+  'America/Toronto': 'CA', 'America/Vancouver': 'CA', 'America/Edmonton': 'CA', 'America/Winnipeg': 'CA', 'America/Halifax': 'CA',
+  'America/St_Johns': 'CA', 'America/Regina': 'CA', 'America/Montreal': 'CA', 'America/Moncton': 'CA', 'America/Whitehorse': 'CA',
+  'America/Yellowknife': 'CA', 'America/Iqaluit': 'CA', 'America/Glace_Bay': 'CA', 'America/Goose_Bay': 'CA',
+};
+
+/**
+ * Country of this phone, to pre-select on the registration screen: from the phone's
+ * time zone first, then the phone language's region; India if neither is in the list.
+ */
 export function deviceCountry(): string {
+  const known = (c: string) => COUNTRIES.some((x) => x.code === c);
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? '';
+    let c = ZONE_COUNTRY[zone] ?? '';
+    if (!c && zone.startsWith('Australia/')) c = 'AU';
+    // Other American zones (New_York, Chicago, Denver, Los_Angeles, Phoenix, Anchorage ...) and Hawaii
+    if (!c && (zone.startsWith('America/') || zone === 'Pacific/Honolulu')) c = 'US';
+    if (known(c)) return c;
+  } catch {
+    /* no time zone */
+  }
   try {
     const region = new Intl.Locale(navigator.language).maximize().region ?? '';
-    return COUNTRIES.some((c) => c.code === region) ? region : 'IN';
+    return known(region) ? region : 'IN';
   } catch {
     return 'IN';
   }
