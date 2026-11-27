@@ -66,7 +66,7 @@ export class BirthDetailsPage implements OnInit {
   gender = '';
 
   // Birth date and time as dropdowns, like the Prokerala kundli form:
-  // Year / Month / Day and Hour (12-hour) / Minute / AM-PM.
+  // Year / Month / Day and Hour (24-hour) / Minute.
   readonly years = Array.from({ length: new Date().getFullYear() - 1900 }, (_, i) =>
     String(new Date().getFullYear() - i),
   );
@@ -75,7 +75,7 @@ export class BirthDetailsPage implements OnInit {
     this.i18n.months().map((label, i) => ({ value: String(i + 1).padStart(2, '0'), label })),
   );
   readonly days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-  readonly hours = ['12', ...Array.from({ length: 11 }, (_, i) => String(i + 1).padStart(2, '0'))];
+  readonly hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')); // 24-hour: 00 - 23
   readonly minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   year = '';
@@ -83,7 +83,6 @@ export class BirthDetailsPage implements OnInit {
   day = '';
   hour = '';
   minute = '';
-  ampm = 'AM';
 
   /** Selected date as YYYY-MM-DD, or '' if incomplete / not a real date. */
   private get dob(): string {
@@ -99,9 +98,7 @@ export class BirthDetailsPage implements OnInit {
   /** Selected time as 24-hour HH:mm, or '' if incomplete. */
   private get time(): string {
     if (!this.hour || !this.minute) return '';
-    let h = Number(this.hour) % 12; // 12 AM -> 0
-    if (this.ampm === 'PM') h += 12; // 12 PM -> 12, 01 PM -> 13
-    return `${String(h).padStart(2, '0')}:${this.minute}`;
+    return `${this.hour}:${this.minute}`;
   }
 
   // Birth place typeahead (any country)
@@ -152,9 +149,8 @@ export class BirthDetailsPage implements OnInit {
     this.month = pad(d.getMonth() + 1);
     this.day = pad(d.getDate());
     const h = d.getHours();
-    this.hour = pad(h % 12 === 0 ? 12 : h % 12);
+    this.hour = pad(h);
     this.minute = pad(d.getMinutes());
-    this.ampm = h < 12 ? 'AM' : 'PM';
   }
 
   private fill(b: RecordModel): void {
@@ -165,10 +161,8 @@ export class BirthDetailsPage implements OnInit {
     if (/^\d{4}-\d{2}-\d{2}$/.test(dob)) [this.year, this.month, this.day] = dob.split('-');
     const m = /^(\d{2}):(\d{2})$/.exec(String(b['birth_time'] ?? ''));
     if (m) {
-      const h = Number(m[1]);
-      this.hour = String(h % 12 === 0 ? 12 : h % 12).padStart(2, '0');
+      this.hour = m[1];
       this.minute = m[2];
-      this.ampm = h < 12 ? 'AM' : 'PM';
     }
     const lat = Number(b['latitude']);
     const lon = Number(b['longitude']);

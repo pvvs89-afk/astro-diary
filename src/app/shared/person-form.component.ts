@@ -62,7 +62,7 @@ const LOCATING: Record<string, string> = {
     </fieldset>
 
     <fieldset class="dd-group">
-      <legend>{{ t('birth_time') }}</legend>
+      <legend>{{ t('birth_time') }} (24h)</legend>
       <div class="dd-row">
         <select class="dd" [attr.aria-label]="t('hour')" [(ngModel)]="hour">
           <option value="" disabled>{{ t('hour') }}</option>
@@ -75,10 +75,6 @@ const LOCATING: Record<string, string> = {
           @for (m of minutes; track m) {
             <option [value]="m">{{ m }}</option>
           }
-        </select>
-        <select class="dd" [attr.aria-label]="t('am_pm')" [(ngModel)]="ampm">
-          <option value="AM">AM</option>
-          <option value="PM">PM</option>
         </select>
       </div>
     </fieldset>
@@ -153,14 +149,13 @@ export class PersonFormComponent implements OnInit {
     this.i18n.months().map((label, i) => ({ value: String(i + 1).padStart(2, '0'), label })),
   );
   readonly days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
-  readonly hours = ['12', ...Array.from({ length: 11 }, (_, i) => String(i + 1).padStart(2, '0'))];
+  readonly hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')); // 24-hour: 00 - 23
   readonly minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
   year = '';
   month = '';
   day = '';
   hour = '';
   minute = '';
-  ampm = 'AM';
 
   placeQuery = '';
   readonly searching = signal(false);
@@ -199,9 +194,8 @@ export class PersonFormComponent implements OnInit {
     this.month = pad(d.getMonth() + 1);
     this.day = pad(d.getDate());
     const h = d.getHours();
-    this.hour = pad(h % 12 === 0 ? 12 : h % 12);
+    this.hour = pad(h);
     this.minute = pad(d.getMinutes());
-    this.ampm = h < 12 ? 'AM' : 'PM';
   }
 
   /** YYYY-MM-DD, or '' if incomplete / not a real date. */
@@ -218,9 +212,7 @@ export class PersonFormComponent implements OnInit {
   /** 24-hour HH:mm, or '' if incomplete. */
   private get time(): string {
     if (!this.hour || !this.minute) return '';
-    let h = Number(this.hour) % 12;
-    if (this.ampm === 'PM') h += 12;
-    return `${String(h).padStart(2, '0')}:${this.minute}`;
+    return `${this.hour}:${this.minute}`;
   }
 
   /** Translation key of the first missing / wrong field, or null if all fine. */
@@ -245,10 +237,8 @@ export class PersonFormComponent implements OnInit {
     if (/^\d{4}-\d{2}-\d{2}$/.test(p.dob)) [this.year, this.month, this.day] = p.dob.split('-');
     const m = /^(\d{2}):(\d{2})$/.exec(p.time);
     if (m) {
-      const h = Number(m[1]);
-      this.hour = String(h % 12 === 0 ? 12 : h % 12).padStart(2, '0');
+      this.hour = m[1];
       this.minute = m[2];
-      this.ampm = h < 12 ? 'AM' : 'PM';
     }
     if (p.place) this.choosePlace(p.place);
   }

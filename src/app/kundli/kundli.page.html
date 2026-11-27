@@ -214,6 +214,9 @@
           <p class="muted small no-pdf">{{ t('tap_dasha') }}</p>
         }
 
+        <!-- Lords of the 12 houses + their results (separate section; later: subscribers only) -->
+        <app-house-lords [rows]="v.houseLords" [lang]="lang()"></app-house-lords>
+
         <!-- Yogas -->
         @if (v.yogas.length) {
           <h3>{{ t('yogas') }}</h3>

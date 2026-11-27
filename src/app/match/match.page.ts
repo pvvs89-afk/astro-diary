@@ -111,7 +111,7 @@ export class MatchPage implements OnInit {
     return `${r[p + '_dob']}T${r[p + '_time']}:00${r[p + '_offset'] || '+05:30'}`;
   }
 
-  /** "12 May 1990, 6:30 am · Hyderabad, Telangana, India" */
+  /** "12 May 1990, 06:30 · Hyderabad, Telangana, India" */
   personText(p: 'boy' | 'girl'): string {
     const r = this.rec();
     if (!r) return '';
@@ -123,7 +123,7 @@ export class MatchPage implements OnInit {
     let clock = time;
     if (t) {
       const h = Number(t[1]);
-      clock = `${h % 12 === 0 ? 12 : h % 12}:${t[2]} ${h < 12 ? 'am' : 'pm'}`;
+      clock = `${String(h).padStart(2, '0')}:${t[2]}`;
     }
     const place = String(r[p + '_place'] ?? '').split(',').slice(0, 2).join(',');
     return `${date}, ${clock} · ${place}`;

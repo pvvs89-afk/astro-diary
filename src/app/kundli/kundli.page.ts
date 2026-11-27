@@ -24,11 +24,12 @@ import { ChartStyleService } from '../services/chart-style.service';
 import { ChartStyleToggleComponent } from '../shared/chart-style-toggle.component';
 import { NorthChartComponent } from '../shared/north-chart.component';
 import { birthText, buildKundliView, chartSummary } from './kundli-view';
+import { HouseLordsComponent } from './house-lords.component';
 
 @Component({
   selector: 'app-kundli',
   standalone: true,
-  imports: [
+  imports: [HouseLordsComponent, 
     NorthChartComponent,
     ChartStyleToggleComponent,
     IonHeader,
@@ -63,6 +64,9 @@ export class KundliPage implements OnInit {
   readonly kundli = signal<RecordModel | null>(null);
 
   readonly view = computed(() => buildKundliView(this.kundli()?.['data'], this.i18n.lang()));
+  /** App language (for the house lords section). */
+  readonly lang = this.i18n.lang;
+
   readonly hasPlace = computed(() => {
     const b = this.birth();
     return !!b && (Number(b['latitude']) !== 0 || Number(b['longitude']) !== 0);

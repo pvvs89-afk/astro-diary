@@ -67,9 +67,9 @@
       </div>
     </fieldset>
 
-    <!-- Birth time: Hour / Minute / AM-PM dropdowns (Prokerala style) -->
+    <!-- Birth time: Hour (24-hour, 00-23) / Minute -->
     <fieldset class="dd-group">
-      <legend>{{ t('birth_time') }}</legend>
+      <legend>{{ t('birth_time') }} (24h)</legend>
       <div class="dd-row">
         <select class="dd" [attr.aria-label]="t('hour')" [(ngModel)]="hour">
           <option value="" disabled>{{ t('hour') }}</option>
@@ -82,10 +82,6 @@
           @for (m of minutes; track m) {
             <option [value]="m">{{ m }}</option>
           }
-        </select>
-        <select class="dd" [attr.aria-label]="t('am_pm')" [(ngModel)]="ampm">
-          <option value="AM">AM</option>
-          <option value="PM">PM</option>
         </select>
       </div>
     </fieldset>

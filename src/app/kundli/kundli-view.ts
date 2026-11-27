@@ -83,6 +83,8 @@ export interface KundliView {
   chart: ChartCell[];
   /** Navamsa (D9) chart; null when this kundli was made before Navamsa was added. */
   navamsa: ChartCell[] | null;
+  /** Lords of the 12 houses from the Rasi chart (empty when the Lagna is unknown). */
+  houseLords: HouseLordRow[];
 }
 
 const str = (v: any): string => (v === null || v === undefined ? '' : String(v));
@@ -230,7 +232,73 @@ export function buildKundliView(data: any, lang: LangCode = 'en'): KundliView | 
     // Prokerala's Navamsa if stored (older kundlis), else calculated here from the
     // planet positions - same result, no extra Prokerala call.
     navamsa: buildNavamsa(data.navamsa, lang) ?? navamsaFromPlanets(planetsRaw, lang),
+    houseLords: buildHouseLords(planetsRaw, lang),
   };
+}
+
+// ---------------------------------------------------------------------------
+// 12 house lords (bhava adhipati) from the Rasi chart: whole-sign houses counted
+// from the Lagna. For each house: its rasi, the rasi's lord, and where that lord
+// sits (house and rasi), with own sign / exalted / debilitated marks.
+// ---------------------------------------------------------------------------
+export interface HouseLordRow {
+  house: number;
+  rasi: string;
+  lord: string;
+  lordHouse: number | null;
+  lordRasi: string;
+  /** '' | 'own' | 'exalted' | 'debilitated' */
+  status: '' | 'own' | 'exalted' | 'debilitated';
+}
+
+/** Lord of each rasi, Mesha (0) to Meena (11). */
+const RASI_LORD = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
+const OWN_SIGNS: Record<string, number[]> = { Sun: [4], Moon: [3], Mars: [0, 7], Mercury: [2, 5], Jupiter: [8, 11], Venus: [1, 6], Saturn: [9, 10] };
+const EXALTED: Record<string, number> = { Sun: 0, Moon: 1, Mars: 9, Mercury: 5, Jupiter: 3, Venus: 11, Saturn: 6 };
+
+export const HOUSE_LORD_TEXT: Record<LangCode, { title: string; hint: string; house: string; rasi: string; lord: string; placed: string; own: string; exalted: string; debilitated: string; results: string; resultTitle: string; resultsNote: string }> = {
+  en: { title: 'Lords of the 12 houses', hint: 'From the Rasi chart, counting houses from the Lagna.', house: 'House', rasi: 'Rasi', lord: 'Lord', placed: 'Lord sits in', own: 'Own sign', exalted: 'Exalted', debilitated: 'Debilitated', results: 'What your house lords mean', resultTitle: 'Lord of house {h} ({l}) in house {p}', resultsNote: '' },
+  hi: { title: '12 भावों के स्वामी', hint: 'राशि चार्ट से, लग्न से भाव गिनकर।', house: 'भाव', rasi: 'राशि', lord: 'स्वामी', placed: 'स्वामी की स्थिति', own: 'स्वराशि', exalted: 'उच्च', debilitated: 'नीच', results: 'आपके भाव स्वामियों के फल', resultTitle: 'भाव {h} का स्वामी ({l}) भाव {p} में', resultsNote: 'फल अभी अंग्रेज़ी में दिखाए गए हैं।' },
+  ta: { title: '12 பாவ அதிபதிகள்', hint: 'ராசி கட்டத்திலிருந்து, லக்னத்திலிருந்து பாவங்களை எண்ணி.', house: 'பாவம்', rasi: 'ராசி', lord: 'அதிபதி', placed: 'அதிபதி இருக்கும் இடம்', own: 'ஆட்சி', exalted: 'உச்சம்', debilitated: 'நீசம்', results: 'உங்கள் பாவ அதிபதிகளின் பலன்கள்', resultTitle: '{h}-ஆம் பாவ அதிபதி ({l}) {p}-ஆம் பாவத்தில்', resultsNote: 'பலன்கள் தற்போது ஆங்கிலத்தில் உள்ளன.' },
+  te: { title: '12 భావాధిపతులు', hint: 'రాశి చక్రం నుండి, లగ్నం నుండి భావాలను లెక్కించి.', house: 'భావం', rasi: 'రాశి', lord: 'అధిపతి', placed: 'అధిపతి ఉన్న స్థానం', own: 'స్వక్షేత్రం', exalted: 'ఉచ్ఛ', debilitated: 'నీచ', results: 'మీ భావాధిపతుల ఫలితాలు', resultTitle: '{h}వ భావాధిపతి ({l}) {p}వ భావంలో', resultsNote: '' },
+  ml: { title: '12 ഭാവാധിപന്മാർ', hint: 'രാശി ചക്രത്തിൽ നിന്ന്, ലഗ്നം മുതൽ ഭാവങ്ങൾ എണ്ണി.', house: 'ഭാവം', rasi: 'രാശി', lord: 'അധിപൻ', placed: 'അധിപൻ നിൽക്കുന്നത്', own: 'സ്വക്ഷേത്രം', exalted: 'ഉച്ചം', debilitated: 'നീചം', results: 'നിങ്ങളുടെ ഭാവാധിപന്മാരുടെ ഫലങ്ങൾ', resultTitle: '{h}-ാം ഭാവാധിപൻ ({l}) {p}-ാം ഭാവത്തിൽ', resultsNote: 'ഫലങ്ങൾ ഇപ്പോൾ ഇംഗ്ലീഷിൽ ആണ്.' },
+};
+
+/** "Lord of house {h} ({l}) in house {p}" with the values filled in. */
+export function houseLordTitle(template: string, row: HouseLordRow): string {
+  return template.replace('{h}', String(row.house)).replace('{l}', row.lord).replace('{p}', String(row.lordHouse ?? ''));
+}
+
+function buildHouseLords(planetsRaw: any[], lang: LangCode): HouseLordRow[] {
+  const rasiOf = (name: string): number | null => {
+    const p = planetsRaw.find((x) => str(x?.name) === name);
+    if (!p) return null;
+    const id = Number(p?.rasi?.id);
+    if (Number.isInteger(id) && id >= 0 && id < 12) return id;
+    const lon = Number(p?.longitude);
+    return isFinite(lon) ? Math.floor((((lon % 360) + 360) % 360) / 30) : null;
+  };
+  const lagna = rasiOf('Ascendant');
+  if (lagna === null) return [];
+  return Array.from({ length: 12 }, (_, i) => {
+    const rasiId = (lagna + i) % 12;
+    const lordEn = RASI_LORD[rasiId];
+    const at = rasiOf(lordEn);
+    let status: HouseLordRow['status'] = '';
+    if (at !== null) {
+      if (EXALTED[lordEn] === at) status = 'exalted';
+      else if ((EXALTED[lordEn] + 6) % 12 === at) status = 'debilitated';
+      else if (OWN_SIGNS[lordEn]?.includes(at)) status = 'own';
+    }
+    return {
+      house: i + 1,
+      rasi: RASI_NAMES[lang][rasiId],
+      lord: planetName(lordEn, lang),
+      lordHouse: at === null ? null : ((at - lagna + 12) % 12) + 1,
+      lordRasi: at === null ? '' : RASI_NAMES[lang][at],
+      status,
+    };
+  });
 }
 
 interface ChartPlanet {
@@ -331,8 +399,5 @@ export function birthText(iso: string, lang: LangCode = 'en'): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso);
   if (!m) return iso;
   const months = MONTH_NAMES[lang];
-  const h = Number(m[4]);
-  const ampm = h < 12 ? 'am' : 'pm';
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${Number(m[3])} ${months[Number(m[2]) - 1]} ${m[1]}, ${h12}:${m[5]} ${ampm}`;
+  return `${Number(m[3])} ${months[Number(m[2]) - 1]} ${m[1]}, ${m[4]}:${m[5]}`;
 }
